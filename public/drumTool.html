@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Beats</title>
+    <style>
+        body {
+            background: #CCF;
+            padding: 10px;
+        }
+        .controls button {
+            margin-right: 10px;
+            width: 80px;
+            height: 40px;
+        }
+        .beatsbutton {
+            margin-right: 4px;
+            margin-left: 4px;
+            width: 32px;
+            height: 24px;
+            border-style: solid;
+            border-width: 4px;
+            border-color: green;
+        }
+        #beatsDiv {
+            border-style: solid;
+            border-width:2px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width=600 height=300></canvas>
+    <br>
+    <div>
+        <span id="canvasStat"></span> &nbsp; <span id="beatNum">beatNum</span>
+    </div>
+    <canvas id="trackingCanvas" width=600 height=300></canvas>
+    <!--
+    <div id="beatsDiv"></div>
+    -->
+    <p></p>
+    <div class="controls" xxstyle="border-width:3;border:solid">
+        <button id="clear">Clear</button>
+        <button id="random">Random</button>
+        <button id="export">Export</button>
+        <button id="beat">Beat</button>
+    </div>
+    <div id="songs"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/libs/jquery-3.1.0.min.js"></script>
+    <script src="js/libs/sprintf.js"></script>
+    <script src="js/GamePad.js"></script>
+    <script src="js/RhythmTool.js"></script>
+    <script src="js/CanvasTool.js"></script>
+    <script src="js/RhythmCanvasGUI.js"></script>
+    <script src="js/DrumTool.js"></script>
+    <script src="js/StateVariables.js"></script>
+    <script src="js/rvlibs/LeapClient.js"></script>
+    <script src="js/rvlibs/LeapRenderer.js"></script>
+    <script src="js/libs/math3d.js"></script>
+    <script src="js/CanvasLeapWatcher.js"></script>
+    <!--
+    <script src="js/CanvasSkelWatcher.js"></script>
+    -->
+    <script src="js/libs/dat.gui.js"></script>
+    <script>
+        let rt = new RhythmTool({guiClass: RhythmCanvasGUI});
+        let drumTool = new DrumTool(rt);
+        let taikoControl = new TaikoControl(rt);
+        rt.start();
+    </script>
+
+</body>
+
+</html>
