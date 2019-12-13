@@ -201,7 +201,7 @@ class ButtonGUI extends RhythmGUI {
 class RhythmTool {
     constructor(opts) {
         opts = opts || {};
-        this.songs = [];
+        this.songs = {};
         this.states = {};
         this.muted = {};
         this.numTracks = 0;
@@ -225,14 +225,28 @@ class RhythmTool {
         this.gui = new guiClass(this);
         this.initFromSounds(opts.sounds);
         this.gui.init();
+        this.initJQ();
         //this.gui = new RhythmGUI(this);
         this.setRandomBeat();
-        this.addSongButton("songs/triplets.json", "triplets");
-        this.addSongButton("songs/cowbells24.json", "cowbells24");
-        this.addSongButton("songs/cowbells33.json", "cowbells33");
-        this.addSongButton("songs/taikoEx1.json", "TaikoExercise1");
-        this.addSongButton("songs/taikoEx2.json", "TaikoExercise2");
-        this.addSongButton("songs/taikoEx3.json", "TaikoExercise3");
+        this.addSong("songs/triplets.json", "triplets");
+        this.addSong("songs/cowbells24.json", "cowbells24");
+        this.addSong("songs/cowbells33.json", "cowbells33");
+        this.addSong("songs/taikoEx1.json", "TaikoExercise1");
+        this.addSong("songs/taikoEx2.json", "TaikoExercise2");
+        this.addSong("songs/taikoEx3.json", "TaikoExercise3");
+    }
+
+    initJQ() {
+        console.log("initJQ");
+        var inst = this;
+        $("#songSelect").change(e => {
+            console.log("select");
+            console.log("e:", e);
+            let id = $("#songSelect").val();
+            console.log("id", id);
+            console.log("text", $("#songSelect").text());
+            inst.loadSong(id);
+        });
     }
 
     initFromSounds(sounds) {
@@ -481,6 +495,20 @@ class RhythmTool {
         this.gui.updateSong();
     }
 
+    async loadSong(id)
+    {
+        console.log("loadSong", id);
+        var specOrURL = this.songs[id];
+        if (typeof specOrURL == "string") {
+            console.log("load song from URL", specOrURL);
+            var spec = await loadJSON(specOrURL);
+            this.loadData(id, spec);
+        }
+        else {
+            this.loadData(id, specOrURL);
+        }
+    }
+
     genEmptyBeats(numMeasures, beatsPerMeasure) {
         var beats = [];
         for (var i = 0; i < numMeasures; i++) {
@@ -546,27 +574,32 @@ class RhythmTool {
         var spec = this.getRhythmSpec();
         // create an object so we can jsonify it later
         console.log("spec:\n" + JSON.stringify(spec, null, 3));
-        this.songs.push(spec);
-        var n = this.songs.length + 1;
+        var n = Object.keys(this.songs).length + 1;
         var id = "song" + n;    
-        this.addSongButton(spec, id);
+        this.addSong(spec, id);
         uploadToFile("songSpecs", spec, id+".json");
     }
 
-    async addSongButton(specOrURL, id) {
+    async addSong(specOrURL, id) {
+        this.songs[id] = specOrURL;
+        //this.addSongButton(id);
+        this.addSongOption(id, id);
+    }
+
+    async addSongOption(id, name) {
+        $('#songSelect')
+        .append($('<option>', { value : id })
+        .text(name).click(async e => {
+        }));
+    }
+
+    async addSongButton(id) {
         $("#songs").append(sprintf("<button id='%s'>%s</button>", id, id));
         var inst = this;
         $("#" + id).click(async e => {
-            console.log("song ", id);
-            if (typeof specOrURL == "string") {
-                console.log("load song from URL", specOrURL);
-                var spec = await loadJSON(specOrURL);
-                inst.loadData(id, spec);
-            }
-            else {
-                inst.loadData(id, specOrURL);
-            }
-        });
+            console.log("clicked song ", id);
+            inst.loadSong(id);
+       });
     }
 
     clickedOn(r, c) {
