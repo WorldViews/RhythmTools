@@ -51,19 +51,35 @@ if (AudioContext) {
     var context = new AudioContext();
 }
 
+function downloadFromBrowser(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+
 function getClockTime() {
     return new Date().getTime() / 1000.0;
 }
 
 // This is a version for uploading to a specified path that may
 // not be a session.  (i.e. global configs, etc.)
-function uploadToFile(dpath, obj, fileName)
-{
+function uploadToFile(dpath, obj, fileName) {
     return uploadDataToFile(dpath, JSON.stringify(obj, null, 3), fileName);
 }
 
-function uploadDataToFile(dpath, data, fileName)
-{
+function warn(str) {
+    //alert(str);
+    console.log("Error: ", str);
+}
+
+function uploadDataToFile(dpath, data, fileName) {
     console.log("uploadDataToFile path " + dpath + "  fileName " + fileName);
     var formData = new FormData();
     formData.append('dir', dpath);
@@ -76,11 +92,11 @@ function uploadDataToFile(dpath, data, fileName)
             var r = JSON.parse(this.response);
             console.log(r);
             if (r.error) {
-                alert('Error uploading: ' + r.error);
-            }
+                warn('Error uploading: ' + r.error);
+           }
         }
     };
-    request.onerror = function (err) { alert('error uploading' + err) };
+    request.onerror = function (err) { warn('error uploading' + err) };
     request.upload.addEventListener("progress", function (evt) {
         if (evt.lengthComputable) {
             var pc = Math.floor((evt.loaded / evt.total) * 100);
@@ -93,30 +109,29 @@ function uploadDataToFile(dpath, data, fileName)
 
 // This is a promise based version of code for getting
 // JSON.
-async function loadJSON(url)
-{
-    console.log("loadJSON: "+url);
+async function loadJSON(url) {
+    console.log("loadJSON: " + url);
     return new Promise((res, rej) => {
         $.ajax({
             url: url,
             dataType: 'text',
-            success: function(str) {
+            success: function (str) {
                 var data;
                 try {
                     data = JSON.parse(str);
                 }
                 catch (err) {
-                    console.log("err: "+err);
-                    alert("Error in json for: "+url+"\n"+err);
+                    console.log("err: " + err);
+                    alert("Error in json for: " + url + "\n" + err);
                     rej(err);
                 }
                 res(data);
             },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log("Failed to get JSON for "+url);
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log("Failed to get JSON for " + url);
                 rej(errorThrown);
             }
-        });  
+        });
     })
 }
 
@@ -135,7 +150,7 @@ class RhythmGUI {
 
     setupGUI() {
         var tool = this.tool;
-        $('#export').click(() => tool.exportBeat());
+        $('#save').click(() => tool.saveRhythm());
         $('#random').click(() => tool.setRandomBeat());
         $('#clear').click(() => tool.clearBeat());
         //$('#beat').click(() => tool.hitBeat());
@@ -153,7 +168,7 @@ class RhythmGUI {
         gui.add(P, 'pAdd', 0, 1);
         gui.add(P, 'pRemove', 0, 1);
         gui.add(P, "BPM", 0, 160).onChange((bpm) => inst.tool.updateBPM(bpm));
-        gui.add(P, "playing").onChange((v) => inst.tool.setPlaying(v));;
+        //gui.add(P, "playing").onChange((v) => inst.tool.setPlaying(v));;
         gui.add(P, "tick");
     }
 }
@@ -231,34 +246,41 @@ class RhythmTool {
         this.addSong("songs/triplets.json", "triplets");
         this.addSong("songs/cowbells24.json", "cowbells24");
         this.addSong("songs/cowbells33.json", "cowbells33");
-        this.addSong("songs/taikoEx1.json", "TaikoExercise1");
-        this.addSong("songs/taikoEx2.json", "TaikoExercise2");
-        this.addSong("songs/taikoEx3.json", "TaikoExercise3");
+        this.addSong("songs/taikoEx1.json", "tex1", "Taiko Exercise 1");
+        this.addSong("songs/taikoEx2.json", "tex2", "Taiko Exercise 2");
+        this.addSong("songs/taikoEx3.json", "tex3", "Taiko Exercise 3");
     }
 
     initJQ() {
         console.log("initJQ");
         var inst = this;
+        $("#playButton").click(e => {
+            inst.setPlaying(!inst.playing);
+        });
+        $("#download").click(e => {
+            // Start file download.
+            inst.downloadSong(this.getRhythmSpec());
+        });
+
         $("#songSelect").change(e => {
-            console.log("select");
-            console.log("e:", e);
             let id = $("#songSelect").val();
             console.log("id", id);
-            console.log("text", $("#songSelect").text());
+            //console.log("text", $("#songSelect").text());
             inst.loadSong(id);
         });
+        this.showButtonState();
     }
 
     initFromSounds(sounds) {
         sounds = sounds || SOUNDS2;
         this.numTracks = sounds.length;
         this.tracks = [];
-        for (var i=0; i<this.numTracks; i++) {
+        for (var i = 0; i < this.numTracks; i++) {
             var name = sounds[i];
             var sound = name;
             if (name.indexOf('.') >= 0)
                 name = name.split('.')[0];
-            this.tracks[i] = {name, sound};
+            this.tracks[i] = { name, sound };
         }
     }
 
@@ -363,6 +385,13 @@ class RhythmTool {
             this.lastClockTime = getClockTime();
             this.updateBPM(this.BPM);
         }
+        this.showButtonState();
+    }
+
+    showButtonState() {
+        var v = this.playing;
+        console.log("showButtonState", v);
+        $("#playButton").html(v ? "Pause" : "Play");
     }
 
     updateBPM(bpm) {
@@ -469,10 +498,10 @@ class RhythmTool {
         this.beatsPerMeasure = spec.beatsPerMeasure || 4;
         this.TICKS = this.numMeasures * this.beatsPerMeasure;
         this.clear();
-        for (var r=0; r<tracks.length; r++) {
+        for (var r = 0; r < tracks.length; r++) {
             var track = tracks[r];
             if (!track.sound)
-                track.sound = track.name+".wav";
+                track.sound = track.name + ".wav";
             //var soundname = track.sound;
             //var fname = soundname+".wav";
             this.tracks.push(track);
@@ -480,7 +509,10 @@ class RhythmTool {
             console.log("track", r, track.name);
             var beats = track.beats;
             if (!beats) {
-                beats = this.genEmptyBeats(this.numMeasures, this.beatsPerMeasure);
+                beats = this.genBeats(this.numMeasures, this.beatsPerMeasure);
+            }
+            if (typeof beats == "string") {
+                beats = this.genBeatsFromStr(beats, this.numMeasures, this.beatsPerMeasure);
             }
             let c = 0;
             for (var i = 0; i < this.numMeasures; i++) {
@@ -495,10 +527,11 @@ class RhythmTool {
         this.gui.updateSong();
     }
 
-    async loadSong(id)
-    {
+    async loadSong(id) {
         console.log("loadSong", id);
-        var specOrURL = this.songs[id];
+        var specOrURL = this.songs[id].specOrURL;
+        var name = this.songs[id].name;
+        $("#songTitle").html(name);
         if (typeof specOrURL == "string") {
             console.log("load song from URL", specOrURL);
             var spec = await loadJSON(specOrURL);
@@ -509,14 +542,27 @@ class RhythmTool {
         }
     }
 
-    genEmptyBeats(numMeasures, beatsPerMeasure) {
+    genBeats(numMeasures, beatsPerMeasure, bvec) {
         var beats = [];
+        var k=0;
         for (var i = 0; i < numMeasures; i++) {
             beats[i] = [];
             for (var j = 0; j < beatsPerMeasure; j++) {
-                beats[i][j] = 0;
+                beats[i][j] = bvec ? bvec[k] : 0;
+                k++;
             }
         }
+        return beats;
+    }
+
+    genBeatsFromStr(beats, nMeasures, beatsPerMeasure)
+    {
+        console.log("getBeatsFromStr:", beats);
+        beats = beats.split(/[ ,]+/);
+        var bvec = beats.map(b => parseInt(b));
+        console.log("bvec", bvec);
+        beats = this.genBeats(nMeasures, beatsPerMeasure, bvec);
+        console.log("beats", beats);
         return beats;
     }
 
@@ -539,7 +585,7 @@ class RhythmTool {
 
     getRhythmSpec() {
         console.log("getRhythmSpec");
-        var spec = {tracks:[]};
+        var spec = { tracks: [] };
         var inst = this;
         // for each row (sound)
         for (let r = 0; r < this.numTracks; r++) {
@@ -547,50 +593,65 @@ class RhythmTool {
             // get the soundname, without .wav
             var soundname = sound.split('.')[0];
             // create arrays
-            var cellsgrouped = [];
-
-            // this will give us [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-            var cellsbuffer = Array.apply(null, Array(inst.TICKS)).map(Number.prototype.valueOf, 0);
-
-            // set the size of a group
-            var groupsize = 4;
+            var beatsStr = "";
             for (let c = 0; c < this.TICKS; c++) {
                 // if it's on, the value is 1
                 if (this.getState(r, c))
-                    cellsbuffer[c] = 1;
+                    beatsStr += "1 ";
+                else
+                    beatsStr += "0 ";
+                if (c % 4 == 3)
+                    beatsStr += " ";
             }
-            while (cellsbuffer.length > 0) {
-                cellsgrouped.push(cellsbuffer.splice(0, groupsize));
-            }
+            beatsStr = beatsStr.trim();
             // update the object
-            var track = {name: soundname, beats: cellsgrouped};
+            var track = { name: soundname, beats: beatsStr };
             spec.tracks.push(track);
         }
         return spec;
     }
 
-    exportBeat() {
-        console.log("exportBeat");
-        var spec = this.getRhythmSpec();
-        // create an object so we can jsonify it later
-        console.log("spec:\n" + JSON.stringify(spec, null, 3));
+    getUniqueId(stype) {
+        stype = stype || "song";
         var n = Object.keys(this.songs).length + 1;
-        var id = "song" + n;    
-        this.addSong(spec, id);
-        uploadToFile("songSpecs", spec, id+".json");
+        var id = stype + n;
+        return id;
     }
 
-    async addSong(specOrURL, id) {
-        this.songs[id] = specOrURL;
+    saveRhythm() {
+        console.log("saveRhythm");
+        var spec = this.getRhythmSpec();
+        // create an object so we can jsonify it later
+        var specStr = JSON.stringify(spec, null, 3)
+        console.log("spec:\n" + specStr);
+        var id = this.getUniqueId();
+        var fileName = id + ".json"
+        this.addSong(spec, id);
+        uploadToFile("songSpecs", spec, fileName);
+        this.downloadSong(spec, fileName);
+    }
+
+    downloadSong(spec, fileName) {
+        if (!fileName) {
+            var id = this.getUniqueId();
+            fileName = id + ".json"
+        }
+        var specStr = JSON.stringify(spec, null, 3)
+        downloadFromBrowser(fileName, specStr);
+    }
+
+    async addSong(specOrURL, id, name) {
+        name = name || id;
+        this.songs[id] = { specOrURL, name };
         //this.addSongButton(id);
-        this.addSongOption(id, id);
+        this.addSongOption(id, name);
     }
 
     async addSongOption(id, name) {
         $('#songSelect')
-        .append($('<option>', { value : id })
-        .text(name).click(async e => {
-        }));
+            .append($('<option>', { value: id })
+                .text(name).click(async e => {
+                }));
     }
 
     async addSongButton(id) {
@@ -599,7 +660,7 @@ class RhythmTool {
         $("#" + id).click(async e => {
             console.log("clicked song ", id);
             inst.loadSong(id);
-       });
+        });
     }
 
     clickedOn(r, c) {
