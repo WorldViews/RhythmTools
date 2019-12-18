@@ -72,6 +72,8 @@ class CanvasTool {
         this.canvas.addEventListener("wheel", e => {
             //console.log("mousewheel", e);
             e.preventDefault();
+            if (inst.lockZoom)
+                return;
             if (e.deltaY > 0)
                 inst.zoom(inst.zf);
             else
@@ -83,6 +85,8 @@ class CanvasTool {
         var tr = this.mouseDownTrans;
         var dx = e.clientX - this.mouseDownPt.x;
         var dy = e.clientY - this.mouseDownPt.y;
+        if (this.panConstraint)
+            [dx,dy] = this.panConstraint(dx,dy);
         this.tx = tr.tx + dx;
         this.ty = tr.ty + dy;
     }
@@ -160,6 +164,8 @@ class CanvasTool {
         this.tx = 0;
         this.ty = 0;
         this.zf = .95;
+        this.aspectRatio = 1;
+        this.lockZoom = false;
     }
 
     clear() {
@@ -192,10 +198,24 @@ class CanvasTool {
         this.setView(x, y, w);
     }
 
+    setViewXminYmin(xLow, yLow, w, h) {
+        var view = this.getView();
+        if (w == null) {
+            w = view.width;
+        }
+        if (h == null) {
+            h = view.height;
+        }
+        var x = xLow + w/2.0;
+        var y = yLow + h/2.0;
+         this.setView(x, y, w);
+    }
+
     setViewWidth(w) {
         var s = this.canvas.width / (0.0 + w);
         this.sx = s;
-        this.sy = s;
+        if (this.aspectRatio)
+            this.sy = s*this.aspectRatio;
         this.draw();
     }
 

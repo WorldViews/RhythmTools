@@ -169,6 +169,7 @@ class RhythmGUI {
         gui.add(P, 'pRemove', 0, 1);
         gui.add(P, "BPM", 0, 160).onChange((bpm) => inst.tool.updateBPM(bpm));
         //gui.add(P, "playing").onChange((v) => inst.tool.setPlaying(v));;
+        gui.add(P, "scroll").onChange((v) => inst.scroll = v);
         gui.add(P, "tick");
     }
 }
@@ -221,6 +222,7 @@ class RhythmTool {
         this.muted = {};
         this.numTracks = 0;
         this.playing = false;
+        this.scroll = false;
         this.BPM = 80;
         //this.TICKS = 16;
         this.beatsPerMeasure = 4;
