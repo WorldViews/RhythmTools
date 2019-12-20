@@ -9,11 +9,13 @@
             background: #CCF;
             padding: 10px;
         }
+
         .controls button {
             margin-right: 10px;
             width: 80px;
             height: 40px;
         }
+
         .beatsbutton {
             margin-right: 4px;
             margin-left: 4px;
@@ -23,21 +25,19 @@
             border-width: 4px;
             border-color: green;
         }
+
         #beatsDiv {
             border-style: solid;
-            border-width:2px;
+            border-width: 2px;
             display: inline-block;
         }
     </style>
 </head>
+
 <body>
     <b><span id="songTitle">Random Drum Pattern</span></b>
     <br>
-    <canvas id="canvas" width=600 height=300></canvas>
-    <br>
-    <div>
-        <span id="canvasStat"></span> &nbsp; <span id="beatNum">beatNum</span>
-    </div>
+    <div id="rhythmTools"></div>
     <!--
     <div id="beatsDiv"></div>
     -->
@@ -65,7 +65,7 @@
     <script src="js/GamePad.js"></script>
     <script src="js/libs/dat.gui.js"></script>
     <script>
-        var rt = new RhythmTool({guiClass: RhythmCanvasGUI});
+        var rt = new RhythmTool({ guiClass: RhythmCanvasGUI });
         let taikoControl = new TaikoControl(rt);
         rt.start();
     </script>

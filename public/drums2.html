@@ -38,6 +38,7 @@
     <b><span id="songTitle">Random Drum Pattern</span></b>
     <br>
     <div id="rhythmTools"></div>
+    <canvas id="instrumentCanvas" width=700 height=200 style="border-width:1;border:solid"></canvas>
     <!--
     <div id="beatsDiv"></div>
     -->
@@ -61,11 +62,13 @@
     <script src="js/libs/sprintf.js"></script>
     <script src="js/RhythmTool.js"></script>
     <script src="js/CanvasTool.js"></script>
-    <script src="js/RhythmCanvasGUI2.js"></script>
+    <script src="js/InstrumentCanvas.js"></script>
+    <script src="js/RhythmCanvasGUI.js"></script>
     <script src="js/GamePad.js"></script>
     <script src="js/libs/dat.gui.js"></script>
     <script>
         var rt = new RhythmTool({ guiClass: RhythmCanvasGUI });
+        let iT = new InstrumentTool(rt);
         let taikoControl = new TaikoControl(rt);
         rt.start();
     </script>

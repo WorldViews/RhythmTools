@@ -91,14 +91,6 @@ class LabelGraphic extends CanvasTool.TextGraphic {
     }
 }
 
-class LabelsCanvas extends CanvasTool {
-    constructor(gui, name, opts) {
-        super(name, opts);
-        this.gui = gui;
-        this.t2p = 0.5;
-    }
-}
-
 class RhythmCanvas extends CanvasTool {
     constructor(gui, name, opts) {
         super(name, opts);
@@ -131,19 +123,10 @@ class RhythmCanvas extends CanvasTool {
 class RhythmCanvasGUI extends RhythmGUI {
     constructor(tool) {
         super(tool);
-        var $div = $("#rhythmTools");
-        $div.append('<canvas id="rhythmLabels", width="100" height="300" style="border-style:solid;border-width:1px" />');
-        $div.append('<canvas id="rhythmCanvas", width="600" height="300" style="border-style:solid;border-width:1px"/>');
-        $div.append('<br>');
-        $div.append('<span id="canvasStat" />&nbsp')
-        $div.append('<span id="beatNum" />');
-        this.canvas = new RhythmCanvas(this, "rhythmCanvas", { timerDelay: 10 });
+        this.canvas = new RhythmCanvas(this, "canvas", { timerDelay: 10 });
         this.canvas.gui = this;
         this.canvas.init();
-        this.labels = new LabelsCanvas(this, "rhythmLabels");
-        this.labels.init();
         this.notes = {};
-        this.scroll = false;
     }
 
     setupGUI() {
@@ -156,32 +139,14 @@ class RhythmCanvasGUI extends RhythmGUI {
         }
         this.updateSong();
         this.canvas.start();
-        this.labels.start();
         var inst = this;
-        var x0 = -.5;
-        var y0 = -.5;
-        var h = 4;
-        this.canvas.aspectRatio = null;
-        this.canvas.panConstraint = (dx,dy) => [dx,0];
-        this.labels.panConstraint = (dx,dy) => [0,0];
-        this.labels.lockZoom = true;
-        setTimeout(e => inst.labels.setViewXminYmin(-1.6, y0, 1.7, h), 100);
-        setTimeout(e => inst.canvas.setViewXminYmin(x0, y0, 9, h), 110);
+        setTimeout(e => inst.canvas.setViewRange(-2, 9, -1, 2), 100);
     }
 
     updateSong() {
         this.canvas.clear();
-        this.labels.clear();
         this.notes = {};
         this.setupCanvas();
-    }
-
-    setViewTimeLow(bLow) {
-        console.log("setViewTimeLow", bLow);
-        var y0 = -.5;
-        var h = 4;
-        var x0 = bLow - 0.5;
-        this.canvas.setViewXminYmin(x0, y0, 9, h);
     }
 
     setupCanvas() {
@@ -196,8 +161,7 @@ class RhythmCanvasGUI extends RhythmGUI {
             var id = name;
             var y = nht * r;
             var label = new LabelGraphic({id, r, x: -.8, y: y, width:1.2, height:.25, text: id, tool: inst});
-            //this.canvas.addGraphic(label);
-            this.labels.addGraphic(label);
+            this.canvas.addGraphic(label);
             for (let c = 0; c < tool.TICKS; c++) {
                 let id = sprintf("b_%s_%s", r, c);
                 var x = this.canvas.timeToPos(c);
@@ -281,9 +245,6 @@ class RhythmCanvasGUI extends RhythmGUI {
 
     noticeTime(t) {
         this.timeGraphic.t = t * 0.5;
-        if (this.scroll) {
-            this.setViewTimeLow(t*0.5);
-        }
     }
 }
 

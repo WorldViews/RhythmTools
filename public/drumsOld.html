@@ -30,17 +30,14 @@
         }
     </style>
 </head>
-
 <body>
-        <div id="rhythmTools"></div>
-<!--
+    <b><span id="songTitle">Random Drum Pattern</span></b>
+    <br>
     <canvas id="canvas" width=600 height=300></canvas>
     <br>
     <div>
         <span id="canvasStat"></span> &nbsp; <span id="beatNum">beatNum</span>
     </div>
--->
-    <canvas id="trackingCanvas" width=600 height=300></canvas>
     <!--
     <div id="beatsDiv"></div>
     -->
@@ -54,27 +51,21 @@
         &nbsp;&nbsp;
         <button id="beat">Beat</button>
     </div>
-    <div id="songs"></div>
+    <div id="songs">
+        <select id="songSelect" style="padding:8px;margin-top:4px">
+            <option>Song Selection</option>
+        </select>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/libs/jquery-3.1.0.min.js"></script>
     <script src="js/libs/sprintf.js"></script>
-    <script src="js/GamePad.js"></script>
     <script src="js/RhythmTool.js"></script>
     <script src="js/CanvasTool.js"></script>
-    <script src="js/RhythmCanvasGUI.js"></script>
-    <script src="js/DrumTool.js"></script>
-    <script src="js/StateVariables.js"></script>
-    <script src="js/rvlibs/LeapClient.js"></script>
-    <script src="js/rvlibs/LeapRenderer.js"></script>
-    <script src="js/libs/math3d.js"></script>
-    <script src="js/CanvasLeapWatcher.js"></script>
-    <!--
-    <script src="js/CanvasSkelWatcher.js"></script>
-    -->
+    <script src="js/RhythmCanvasGUIOld.js"></script>
+    <script src="js/GamePad.js"></script>
     <script src="js/libs/dat.gui.js"></script>
     <script>
-        let rt = new RhythmTool({guiClass: RhythmCanvasGUI});
-        let drumTool = new DrumTool(rt);
+        var rt = new RhythmTool({guiClass: RhythmCanvasGUI});
         let taikoControl = new TaikoControl(rt);
         rt.start();
     </script>

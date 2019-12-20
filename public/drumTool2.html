@@ -33,13 +33,9 @@
 
 <body>
         <div id="rhythmTools"></div>
-<!--
-    <canvas id="canvas" width=600 height=300></canvas>
+
+    <canvas id="instrumentCanvas" width=600 height=200 style="border-width:1;border:solid"></canvas>
     <br>
-    <div>
-        <span id="canvasStat"></span> &nbsp; <span id="beatNum">beatNum</span>
-    </div>
--->
     <canvas id="trackingCanvas" width=600 height=300></canvas>
     <!--
     <div id="beatsDiv"></div>
@@ -61,6 +57,7 @@
     <script src="js/GamePad.js"></script>
     <script src="js/RhythmTool.js"></script>
     <script src="js/CanvasTool.js"></script>
+    <script src="js/InstrumentCanvas.js"></script>
     <script src="js/RhythmCanvasGUI.js"></script>
     <script src="js/DrumTool.js"></script>
     <script src="js/StateVariables.js"></script>
@@ -68,13 +65,11 @@
     <script src="js/rvlibs/LeapRenderer.js"></script>
     <script src="js/libs/math3d.js"></script>
     <script src="js/CanvasLeapWatcher.js"></script>
-    <!--
-    <script src="js/CanvasSkelWatcher.js"></script>
-    -->
     <script src="js/libs/dat.gui.js"></script>
     <script>
         let rt = new RhythmTool({guiClass: RhythmCanvasGUI});
         let drumTool = new DrumTool(rt);
+        let instrumentTool = new InstrumentTool(rt);
         let taikoControl = new TaikoControl(rt);
         rt.start();
     </script>
