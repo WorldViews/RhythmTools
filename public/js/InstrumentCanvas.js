@@ -31,21 +31,20 @@ class RhythmCanvas extends CanvasTool {
     
 }
 */
-class DrumGraphic extends CanvasTool.RectGraphic {
+class DrumGraphic extends CanvasTool.TextGraphic {
     constructor(opts) {
         super(opts);
         console.log("***DrumGraphic", opts);
+        this.r = opts.r;
         this.tool = opts.tool;
         this.rhythmTool = this.tool.rhythmTool;
         this.lineWidth = .02;
         this.width = opts.width || 0.4;
-        this.height = opts.height || this.width/2;
+        this.height = opts.height || this.width / 2;
     }
 
-
     onClick() {
-        NOTE = this;
-        this.rhythmTool.clickedOn(this.r, this.c);
+        this.rhythmTool.hitBeat(this.r);
     }
 }
 
@@ -56,58 +55,84 @@ class InstrumentCanvas extends CanvasTool {
         this.tool = instrumentTool;
         console.log("tool", this.tool);
     }
-
-    addDrums() {
-        var tool = this.tool;
-        console.log("tool", this.tool);
-        for (var i=0; i<3; i++) {
-            for (var j=0; j<3; j++) {
-                var id="d"+i+"_"+j;
-                var d = new DrumGraphic({tool, id, x: i, y: j, width:1, height: 1});
-                this.addGraphic(d);
-            }
-        }
-    }
 }
 
 class InstrumentTool {
     constructor(rhythmTool) {
         console.log("**** InstrumentTool ****", rhythmTool);
-        /*
-        super(tool);
-        var $div = $("#rhythmTools");
-        $div.append('<canvas id="rhythmLabels", width="100" height="300" style="border-style:solid;border-width:1px" />');
-        $div.append('<canvas id="rhythmCanvas", width="600" height="300" style="border-style:solid;border-width:1px"/>');
-        $div.append('<br>');
-        $div.append('<span id="canvasStat" />&nbsp')
-        $div.append('<span id="beatNum" />');
-        */
+        rhythmTool.instrumentTool = this;
         this.rhythmTool = rhythmTool;
+        this.drums = [];
         this.canvas = new InstrumentCanvas(this, "instrumentCanvas", { timerDelay: 10 });
         this.canvas.gui = this;
         this.canvas.init();
-        this.canvas.addDrums();
         this.canvas.start();
-     }
+        this.updateSong();
+    }
 
+    clear() {
+        this.canvas.clear();
+        this.drums = [];
+    }
 
-    noticeState(r, c, v) {
-        //console.log("noticeState", r, c, v);
-        var bt = this.tool.getBeat(r, c);
+    /*
+    addDrums() {
+        for (var i = 0; i < 8; i++) {
+            this.addDrum("drum" + i);
+        }
+    }
+
+    addDrum(name) {
+        var text = name;
+        this.drums.push(name);
+        var tool = this.rhythmTool;
+        var i = this.drums.length;
+        var x0 = -5;
+        var id = "d_" + i;
+        var w = 1.25;
+        var h = .4;
+        var dx = w + .2;
+        var y = 0;
+        var x = x0 + dx * i;
+        var d = new DrumGraphic({ tool, id, text, x, y, width: w, height: h });
+        this.canvas.addGraphic(d);
+    }
+    */
+
+    updateSong() {
+        this.clear();
+        var inst = this;
+        var x0 = -5;
+        var w = 1.25;
+        var h = 1;
+        var dx = w + .2;
+        var rhythmTool = this.rhythmTool;
+        for (let r = 0; r < rhythmTool.numTracks; r++) {
+            //var name = tool.tracks[r].sound.split('.')[0];
+            var name = rhythmTool.tracks[r].name;
+            var text = name;
+            var id = name;
+            var y = 0;
+            var x = x0 + dx * r;
+            var d = new DrumGraphic({ tool: this, id, text, x, y, r, width: w, height: h });
+            this.drums.push(d);
+            this.canvas.addGraphic(d);
+        }
+    }
+
+    noticeState(r, v) {
+        //console.log("noticeState", r, v);
         var color = v ? 'blue' : 'white';
-        bt.css('background-color', color);
-        var id = r + "_" + c;
-        var ng = this.notes[id];
-        if (!ng) {
-            console.log("*** no note", id);
+        var dg = this.drums[r];
+        if (!dg) {
+            console.log("*** no instrument", r);
             return;
         }
-        //console.log("fillStyle", id, color);
-        ng.fillStyle = color;
+        dg.fillStyle = color;
     }
 
     noticeTime(t) {
-        this.timeGraphic.t = t * 0.5;
+       // this.timeGraphic.t = t * 0.5;
     }
 }
 

@@ -245,6 +245,7 @@ class RhythmTool {
         this.initJQ();
         //this.gui = new RhythmGUI(this);
         this.setRandomBeat();
+        this.instrumentTool = null;
         this.addSong("songs/triplets.json", "triplets");
         this.addSong("songs/cowbells24.json", "cowbells24");
         this.addSong("songs/cowbells33.json", "cowbells33");
@@ -372,10 +373,13 @@ class RhythmTool {
             this.setBeatBorder(i, this.currentTick, 'red');
             if (this.muted[i])
                 continue;
-            if (this.getState(i, this.currentTick)) {
+            var v = this.getState(i, this.currentTick);
+            if (v) {
                 //console.log("tick play ", i, this.currentTick);
                 this.playSound(soundPrefix + this.tracks[i].sound)
             }
+            if (this.instrumentTool)
+                this.instrumentTool.noticeState(i, v);
         }
         this.mutate();
     }
@@ -527,6 +531,8 @@ class RhythmTool {
             }
         }
         this.gui.updateSong();
+        if (this.instrumentTool)
+            this.instrumentTool.updateSong();
     }
 
     async loadSong(id) {
