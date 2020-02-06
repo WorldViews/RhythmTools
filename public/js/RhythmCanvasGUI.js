@@ -1,4 +1,5 @@
 var NOTE = null;
+var HALFBEATS = false;
 
 class NoteGraphic extends CanvasTool.RectGraphic {
     constructor(opts) {
@@ -35,6 +36,8 @@ class CountGraphic extends NoteGraphic {
     }
 
     getLabels() {
+        if (HALFBEATS)
+            return ["one", "and", "two", "and", "three", "and", "four", "and"];
         return ["one", "two", "three", "four", "five", "six", "seven", "eight"];
     }
 
@@ -55,6 +58,8 @@ class CountGraphic extends NoteGraphic {
 
 class JapaneseCount extends CountGraphic {
     getLabels(c) {
+        if (HALFBEATS)
+            return ["itchi", "to", "ni", "to", "san", "to", "shi", "to"];
         return ["itchi", "ni", "san", "shi", "go", "roku", "shichi", "hachi"];
     }
 }

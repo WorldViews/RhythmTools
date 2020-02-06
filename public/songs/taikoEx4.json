@@ -1,0 +1,27 @@
+{
+   "HALFBEATS": true,
+   "beatsPerMeasure": 8,
+   "numMeasures": 2,
+   "tracks": [
+      {
+         "name": "count"
+      },
+      {
+         "name": "nihongo"
+      },
+      {
+         "name": "cowbell",
+         "beats": "1 0 1 0  1 0 1 0  1 0 1 0  1 0 1 0"
+      },
+      {
+         "name": "taiko L",
+         "sound": "taiko.wav",
+         "beats": "1 0 0 0  0 0 0 0  1 0 0 0  0 0 0 0"
+      },
+      {
+         "name": "taiko R",
+         "sound": "taiko.wav",
+         "beats": "0 0 0 0   0 1 0 0  0 0 0 0  0 1 0 0"
+      }
+   ]
+}

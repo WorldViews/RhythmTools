@@ -252,6 +252,7 @@ class RhythmTool {
         this.addSong("songs/taikoEx1.json", "tex1", "Taiko Exercise 1");
         this.addSong("songs/taikoEx2.json", "tex2", "Taiko Exercise 2");
         this.addSong("songs/taikoEx3.json", "tex3", "Taiko Exercise 3");
+        this.addSong("songs/taikoEx4.json", "tex4", "Taiko Exercise 4");
     }
 
     initJQ() {
@@ -499,6 +500,7 @@ class RhythmTool {
 
     loadData(id, spec) {
         console.log("loadData", id, spec);
+        HALFBEATS = spec.HALFBEATS || false;
         var tracks = spec.tracks;
         this.numMeasures = spec.numMeasures || 4;
         this.beatsPerMeasure = spec.beatsPerMeasure || 4;
