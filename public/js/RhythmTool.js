@@ -4,11 +4,9 @@ although there is little remaining resemblance.
 */
 
 'use strict';
-var AudioContext = window.AudioContext || window.webkitAudioContext || false;
 
-//var soundPrefix = 'http://localhost:8000/sounds/';
-var soundPrefix = 'sounds/';
-var SOUNDS1 = [
+/*
+var SOUNDS = [
     'bass_drum.wav',
     'snare_drum.wav',
     'low_tom.wav',
@@ -27,23 +25,17 @@ var SOUNDS1 = [
     'maracas.wav'
 ];
 
-var SOUNDS2 = [
+*/
+
+var SOUNDS = [
     'count',
     'nihongo',
-    'low_conga.wav',
-    'mid_conga.wav',
-    'hi_conga.wav',
-    'claves.wav',
-    'cowbell.wav',
-    'taiko.wav'
-];
-
-var SOUNDS3 = [
-    'low_conga.wav',
-    'mid_conga.wav',
-    'cowbell.wav',
-    'taiko.wav',
-    'taiko.wav'
+    'low_conga',
+    'mid_conga',
+    'hi_conga',
+    'claves',
+    'cowbell',
+    'taiko'
 ];
 
 var buffers = {};
@@ -133,122 +125,6 @@ async function loadJSON(url) {
             }
         });
     })
-}
-
-class Scorer {
-    constructor(tool) {
-        this.tool = tool;
-        this.reset();
-    }
-
-    reset() {
-        this.playedNotes = [];  // notes in the song
-        this.userNotes = [];    // notes played by user
-        this.missedNotes = 0;
-        this.extraneousNotes = 0;
-        this.matchedNotes = 0;
-    }
-
-    observeUserNote(note) {
-        console.log("scorer observer userPlayedNote", note);
-        this.userNotes.push(note);
-    }
-
-    observePlayedNote(note) {
-        this.dumpStats();
-        //console.log("scorer observe playedNote", note);
-        this.playedNotes.push(note);
-    }
-
-    // this is called every frame and tries to match
-    // notes played from the score, and user played notes.
-    update()
-    {
-        //this.dump();
-        let inst = this;
-        var t = getClockTime();
-        var MAX_DELAY = 1.0;
-        var MAX_TIME_ERROR = 0.5;
-        var tMin = t - MAX_DELAY;
-        this.prune(this.playedNotes, tMin, note => {
-            console.log("** missed note", note);
-            inst.missedNotes++
-        });
-        this.prune(this.userNotes, tMin, note => {
-            console.log("** extraneous note", note);
-            inst.extraneousNotes++;
-        });
-        for (var i=0; i<this.playedNotes.length; i++) {
-            var playedNote = this.playedNotes[i];
-            var userNote = this.findNearestNote(this.userNotes, playedNote.t);
-            if (!userNote)
-                continue;
-            var dt = userNote.t - playedNote.t;
-            if (Math.abs(dt) < MAX_TIME_ERROR) {
-                console.log("** matched note", userNote, playedNote);
-                inst.matchedNotes++;
-                this.removeNote(this.playedNotes, playedNote);
-                this.removeNote(this.userNotes, userNote);
-                break;
-            }
-        }
-    }
-
-    removeNote(notes, note) {
-        var i = notes.indexOf(note);
-        if (i < 0) {
-            console.log("*****ERROR: note not in list");
-            return;
-        }
-        notes.splice(i, 1);
-    }
-
-    findNearestNote(notes, t) {
-        var nearestNote = null;
-        var nearestDeltaT = 1.0E100;
-        notes.forEach(note => {
-            var dt = Math.abs(note.t - t);
-            if (dt < nearestDeltaT) {
-                nearestDeltaT = dt;
-                nearestNote = note;
-            }
-        });
-        return nearestNote;
-    }
-
-    prune(notes, tMin, rmFun) {
-        //console.log("prune", label, tMin);
-        while (notes.length > 0) {
-            var note = notes[0];
-            if (note.t > tMin)
-                break;
-            rmFun(note);
-            notes.shift();
-        }
-    }
-
-    dumpStats() {
-        console.log("extra notes:", this.extraneousNotes);
-        console.log("missed notes: ", this.missedNotes);
-        console.log("matched notes:", this.matchedNotes);
-        var str = sprintf("extra: %d missed: %d matched: %d",
-            this.extraneousNotes, this.missedNotes, this.matchedNotes);
-        $("#scoreStats").html(str);
-
-    }
-
-    dump() {
-        if (this.playedNotes.length)
-            console.log("playedNotes:");
-        this.playedNotes.forEach( note => {
-            console.log(JSON.stringify(note));
-        });
-        if (this.userNotes.length)
-            console.log("userPlayedNotes:");
-        this.userNotes.forEach(note=> {
-            console.log(JSON.stringify(note));
-        });
-    }
 }
 
 class RhythmGUI {
@@ -363,6 +239,7 @@ class RhythmTool {
         this.setRandomBeat();
         this.scorer = new Scorer(this);
         this.instrumentTool = null;
+        this.soundPlayer = new SoundPlayer();
         this.addSong("songs/triplets.json", "triplets");
         this.addSong("songs/cowbells24.json", "cowbells24");
         this.addSong("songs/cowbells33.json", "cowbells33");
@@ -393,7 +270,7 @@ class RhythmTool {
     }
 
     initFromSounds(sounds) {
-        sounds = sounds || SOUNDS2;
+        sounds = sounds || SOUNDS;
         this.numTracks = sounds.length;
         this.tracks = [];
         for (var i = 0; i < this.numTracks; i++) {
@@ -415,40 +292,9 @@ class RhythmTool {
         this.muted[r] = val;
     }
 
-    playSound(url) {
-        //console.log("playSound "+url);
-        if (!AudioContext) {
-            new Audio(url).play();
-            return;
-        }
-        if (typeof (buffers[url]) == 'undefined') {
-            buffers[url] = null;
-            var req = new XMLHttpRequest();
-            req.open('GET', url, true);
-            req.responseType = 'arraybuffer';
-
-            req.onload = function () {
-                context.decodeAudioData(req.response,
-                    function (buffer) {
-                        buffers[url] = buffer;
-                        playBuffer(buffer);
-                    },
-                    function (err) {
-                        console.log(err);
-                    }
-                );
-            };
-            req.send();
-        }
-        function playBuffer(buffer) {
-            var source = context.createBufferSource();
-            source.buffer = buffer;
-            source.connect(context.destination);
-            source.start();
-        };
-        if (buffers[url]) {
-            playBuffer(buffers[url]);
-        }
+    playNote(instName) {
+        console.log("playNote", instName);
+        this.soundPlayer.playNote(instName);
     }
 
     requestInterval() {
@@ -494,7 +340,7 @@ class RhythmTool {
             var v = this.getState(i, this.currentTick);
             if (v) {
                 //console.log("tick play ", i, this.currentTick);
-                this.playSound(soundPrefix + this.tracks[i].sound);
+                this.playNote(this.tracks[i].sound);
                 notesPlayed.push(i);
             }
             if (this.instrumentTool)
@@ -624,7 +470,7 @@ class RhythmTool {
     hitBeat(i) {
         if (i == null)
             i = this.numTracks - 1;
-        this.playSound(soundPrefix + this.tracks[i].sound);
+        this.playNote(this.tracks[i].sound);
         this.gui.noticeUserBeat(this.beatNum);
         if (this.scorer)
             this.scorer.observeUserNote({t: getClockTime(), name: "BUTTON"});
@@ -640,8 +486,10 @@ class RhythmTool {
         this.clear();
         for (var r = 0; r < tracks.length; r++) {
             var track = tracks[r];
-            if (!track.sound)
-                track.sound = track.name + ".wav";
+            if (!track.sound) {
+                //track.sound = track.name + ".wav";
+                track.sound = track.name;
+            }
             //var soundname = track.sound;
             //var fname = soundname+".wav";
             this.tracks.push(track);

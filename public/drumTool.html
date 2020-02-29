@@ -67,6 +67,7 @@
     <script src="js/CanvasTool.js"></script>
     <script src="js/RhythmCanvasGUI.js"></script>
     <script src="js/DrumTool.js"></script>
+    <script src="js/MidiTool.js"></script>
     <script src="js/StateVariables.js"></script>
     <script src="js/rvlibs/LeapClient.js"></script>
     <script src="js/rvlibs/LeapRenderer.js"></script>
@@ -80,6 +81,7 @@
         let rt = new RhythmTool({guiClass: RhythmCanvasGUI});
         let drumTool = new DrumTool(rt);
         let taikoControl = new TaikoControl(rt);
+        let midiTool = new MidiTool(rt);
         rt.start();
     </script>
 

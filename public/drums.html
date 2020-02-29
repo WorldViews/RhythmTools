@@ -61,6 +61,11 @@
     <script src="js/libs/jquery-3.1.0.min.js"></script>
     <script src="js/libs/sprintf.js"></script>
     <script src="js/RhythmTool.js"></script>
+    <script src="js/DynObj/DynamicObject.js"></script>
+    <script src="js/DynObj/DynamicObjectDB.js"></script>
+    <script src="js/MidiTool.js"></script>
+    <script src="js/SoundPlayer.js"></script>
+    <script src="js/RhythmScorer.js"></script>
     <script src="js/CanvasTool.js"></script>
     <script src="js/RhythmCanvasGUI.js"></script>
     <script src="js/GamePad.js"></script>
@@ -68,7 +73,9 @@
     <script>
         var rt = new RhythmTool({ guiClass: RhythmCanvasGUI });
         let taikoControl = new TaikoControl(rt);
+        let midiTool = new MidiTool(rt);
         rt.start();
+        //let rp = new RhythmPlayer();
     </script>
 
 </body>
