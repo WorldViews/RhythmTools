@@ -1,3 +1,7 @@
+/*
+This is a class for playing around with Leap as a controller
+for drum Rhythms
+*/
 
 function dist(v1, v2) { return Math.sqrt(dist2(v1,v2))};
 function dist2(v1, v2) {
@@ -9,7 +13,6 @@ function dist2(v1, v2) {
     }
     return d2;
 }
-
 
 class DrumTool {
     constructor(rhythmTool) {
