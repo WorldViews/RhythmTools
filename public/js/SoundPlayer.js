@@ -65,13 +65,14 @@ class SoundPlayer {
 }
 
 class BeatsPlayer {
-    constructor(app) {
-        this.soundPlayer = new SoundPlayer();
+    constructor(opts) {
+        opts = opts || {};
+        this.soundPlayer = opts.soundPlayer || new SoundPlayer();
         this.rvPlayer = null;
-        this.app = app;
+        this.app = opts.app;
         this.dynObjDB = null;
         var recsURL;
-        if (app) {
+        if (this.app) {
             this.rvPlayer = app.player;
             recsURL = "/recordings/"+this.rvPlayer.recordingId+"/beats.json";
         }
@@ -85,6 +86,7 @@ class BeatsPlayer {
         // Instead this should regiser as a controller or
         // something like that that gets called every frame
         setInterval(() => inst.tick(), 50);
+        this.tStart = getClockTime();
     }
 
     tick() {
@@ -131,11 +133,12 @@ class BeatsPlayer {
         this.dynObjDB = new DynamicObjectDB("labels", inst.handleLabelMessage.bind(this));
         //this.dynObjDB.onEnd = (dynObj) => inst.noticeReachedEndLabels();
         try {
-           await this.dynObjDB.load(recsURL);
+            await this.dynObjDB.load(recsURL);
             this.dynObjDB.dump();
         }
         catch (err) {
-            console.log("Cannot get"+recsURL);
+            console.log("Cannot get "+recsURL);
+            console.log("err: ", err);
         }
     }
 
