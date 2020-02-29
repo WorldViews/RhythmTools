@@ -75,7 +75,8 @@
         var rt = new RhythmTool({ guiClass: RhythmCanvasGUI });
         let taikoControl = new TaikoControl(rt);
         let midiTool = new MidiTool(rt);
-        let beatPlayer = new BeatsPlayer({soundPlayer: rt.soundPlayer})
+        let beatPlayer = new BeatsPlayer({soundPlayer: rt.soundPlayer,
+                                          rhythmTool: rt});
         rt.start();
         //let rp = new RhythmPlayer();
     </script>

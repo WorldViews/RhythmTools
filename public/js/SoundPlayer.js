@@ -85,6 +85,7 @@ class BeatsPlayer {
         // synched between this player and the mail player.
         // Instead this should regiser as a controller or
         // something like that that gets called every frame
+        this.rhythmTool = opts.rhythmTool;
         setInterval(() => inst.tick(), 50);
         this.tStart = getClockTime();
     }
@@ -98,6 +99,9 @@ class BeatsPlayer {
         var t;
         if (this.rvPlayer)
             t = this.rvPlayer.getPlayTime();
+        else if (this.rhythmTool) {
+            t = this.rhythmTool.getPlayTime();
+        }
         else {
             t = getClockTime() - this.tStart;
         }
@@ -135,6 +139,10 @@ class BeatsPlayer {
         try {
             await this.dynObjDB.load(recsURL);
             this.dynObjDB.dump();
+            if (this.rhythmTool) {
+                this.rhythmTool.loadFromDynObjDB(this.dynObjDB);
+                //this.updateRhythmTool();
+            }
         }
         catch (err) {
             console.log("Cannot get "+recsURL);

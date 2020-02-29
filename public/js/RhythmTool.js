@@ -328,6 +328,14 @@ class RhythmTool {
         }
     }
 
+    getBeatNum() {
+        return this.beatNum;
+    }
+
+    getPlayTime() {
+        return 60*this.beatNum/this.BPM;
+    }
+
     handleBeat() {
         //this.gui.noticeTime(this.t);
         this.gui.activateBeat(this.currentTick);
@@ -517,6 +525,19 @@ class RhythmTool {
             this.instrumentTool.updateSong();
         if (this.scorer)
             this.scorer.reset();
+    }
+
+    loadFromDynObjDB(dynObjDB) {
+        console.log("loadFromDynObjDB", dynObjDB);
+        HALFBEATS = false;
+        //var tracks = []];
+        this.beatsPerMeasure = 4;
+        var tMax = dynObjDB.maxTime;
+        this.TICKS = Math.ceil(tMax);
+        this.numMeasures = Math.ceil(this.TICKS/this.beatsPerMeasure);
+        //this.TICKS = this.numMeasures * this.beatsPerMeasure;
+        this.clear();
+        this.gui.updateSongFromDynObj(dynObjDB);
     }
 
     async loadSong(id) {

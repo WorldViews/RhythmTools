@@ -181,6 +181,37 @@ class RhythmCanvasGUI extends RhythmGUI {
         this.setupCanvas();
     }
 
+    updateSongFromDynObj(dynObjDB) {
+        this.canvas.clear();
+        this.labels.clear();
+        this.notes = {};
+        var tool = this.tool;
+        var db = dynObjDB;
+        var dno = db.dynamicObjects["drum"]
+        var gui = this;
+        console.log("GUI", gui);
+        var canvas = gui.canvas;
+        console.log("canvas", canvas);
+        for (var i=0; i<dno.times.length; i++) {
+            var t = dno.times[i];
+            var mt = t / 60;
+            var bt = mt * tool.BPM;
+            t = bt;
+            let id = sprintf("xxx_%f_%s", t,10);
+            var c = t;
+            var r = 1;
+            var x = canvas.timeToPos(c);
+            var y = -0.2;
+            console.log("rec", t, x, y);
+            var ng = new NoteGraphic({ id, t: c, x, y, r, c, width: .1, height: .25, tool: gui });
+            canvas.addGraphic(ng);
+        }
+        this.timeGraphic = new TimeGraphic({ x: 0, y: 1, t: 0 });
+        this.canvas.addGraphic(this.timeGraphic);
+        this.beatGraphic = new  NoteGraphic({ x:0, y:2.5, r:0, c:0, width: 0.1, tool: gui });
+        this.canvas.addGraphic(this.beatGraphic);
+    }
+
     setViewTimeLow(bLow) {
         console.log("setViewTimeLow", bLow);
         var y0 = -.5;
@@ -264,6 +295,10 @@ class RhythmCanvasGUI extends RhythmGUI {
         for (let r = 0; r < tool.numTracks; r++) {
             for (let c = 0; c < this.tool.TICKS; c++) {
                 var note = this.notes[r + "_" + c];
+                if (!note) {
+                    console.log("no note found for", r, c);
+                    continue;
+                }
                 note.setActive(c == b);
             }
         }
