@@ -12,12 +12,12 @@
       },
       {
          "name": "taiko L",
-         "sound": "taiko.wav",
+         "sound": "taiko",
          "beats": "1 1 1 0  1 1 1 0  1 1 1 0  1 1 1 0"
       },
       {
          "name": "taiko R",
-         "sound": "taiko.wav",
+         "sound": "taiko",
          "beats": "1 1 1 0   1 1 1 0  1 1 1 0  1 1 1 0"
       }
    ]

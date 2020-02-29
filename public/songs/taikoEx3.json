@@ -163,7 +163,7 @@
       },
       {
          "name": "taiko L",
-         "sound": "taiko.wav",
+         "sound": "taiko",
          "beats": [
             [
                0,
@@ -217,7 +217,7 @@
       },
       {
          "name": "taiko R",
-         "sound": "taiko.wav",
+         "sound": "taiko",
          "beats": [
             [
                0,
