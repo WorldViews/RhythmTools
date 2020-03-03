@@ -20,8 +20,9 @@ class SoundPlayer {
         instName = instName || "taiko";
         //this.app.beep("c4", "16n");
         //this.playSound(soundPrefix + instName + ".wav");
-        this.ext = ".ogg";
         this.ext = ".wav";
+        if (instName == "taiko"  || instName == "cowbell")
+            this.ext = ".ogg";
         this.playSound(this.soundPrefix + instName + this.ext);
     }
 
