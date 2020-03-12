@@ -475,10 +475,13 @@ class RhythmTool {
         }
     }
 
-    hitBeat(i) {
-        if (i == null)
-            i = this.numTracks - 1;
-        this.playNote(this.tracks[i].sound);
+    hitBeat(sound) {
+        if (sound == null) {
+            var i = this.numTracks - 1;
+            sound = this.tracks[i].sound;
+        }
+        console.log("hitBeat ", sound);
+        this.playNote(sound);
         this.gui.noticeUserBeat(this.beatNum);
         if (this.scorer)
             this.scorer.observeUserNote({t: getClockTime(), name: "BUTTON"});

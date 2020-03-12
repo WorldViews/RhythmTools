@@ -12,7 +12,7 @@ class GamePad {
                 e.gamepad.buttons.length, e.gamepad.axes.length);
             inst.scanGamepads();
         });
-        setInterval(() => inst.queryState(), 100);
+        setInterval(() => inst.queryState(), 10);
     }
 
     onButtonChange(i, val, ts) {
@@ -64,8 +64,10 @@ class GamePad {
 
 class TaikoGamePad extends GamePad {
     onButtonChange(i, val, ts) {
-        //console.log("********* hit button", i, val, ts);
+        console.log("********* hit button", i, val, ts);
         if ((i == 10 || i == 11) && val)
+            this.onStrike(i, ts);
+        if ((i == 6 || i == 7) && val)
             this.onStrike(i, ts);
     }
 
@@ -83,7 +85,10 @@ class TaikoControl extends TaikoGamePad {
 
     onStrike(bid, ts) {
         console.log("onStrike", bid);
-        this.rhythmTool.hitBeat();
+        var soundName = "taiko";
+        if (bid == 6 || bid == 7)
+            soundName = "cowbell";
+        this.rhythmTool.hitBeat(soundName);
     }
 }
 

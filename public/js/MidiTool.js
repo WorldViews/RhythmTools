@@ -44,8 +44,11 @@ class MidiTool {
       var dsId = data[1];
       var vel = data[2];
       console.log("data: ", midiId, dsId, vel);
+      var sound = "taiko";
+      if (dsId == 42 || dsId == 51)
+        sound = "cowbell";
       if (vel > 0) {
-        this.rhythmTool.hitBeat();
+        this.rhythmTool.hitBeat(sound);
       }
     }
 }
