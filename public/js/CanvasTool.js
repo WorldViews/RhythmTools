@@ -92,7 +92,7 @@ class CanvasTool {
     }
 
     handleMouseDrag(e) {
-        console.log("handleMouseDrag", e);
+        //console.log("handleMouseDrag", e);
         if (e.which > 1)
             this.handleMousePan(e);
     }

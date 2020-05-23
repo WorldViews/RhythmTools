@@ -38,9 +38,38 @@ var SOUNDS = [
     'taiko'
 ];
 
+/*
+this.addSong("songs/triplets.json", "triplets");
+this.addSong("songs/cowbells24.json", "cowbells24");
+this.addSong("songs/cowbells33.json", "cowbells33");
+this.addSong("songs/taikoEx1.json", "tex1", "Taiko Exercise 1");
+this.addSong("songs/taikoEx2.json", "tex2", "Taiko Exercise 2");
+this.addSong("songs/taikoEx3.json", "tex3", "Taiko Exercise 3");
+this.addSong("songs/taikoEx4.json", "tex4", "Taiko Exercise 4");
+*/
+var SONGS = [
+    {id: "triplets"},
+    {id: "cowbells24"},
+    {id: "taikoEx1"}
+];
+
 var buffers = {};
 if (AudioContext) {
     var context = new AudioContext();
+}
+
+function getParameterByName(name, defaultVal) {
+    //console.log("getParameterByName", name, defaultVal);
+    if (typeof window === 'undefined') {
+        console.log("***** getParameterByName called outside of browser...");
+        return defaultVal;
+    }
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    val = match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+    //console.log("val:", val);
+    if (!val)
+        return defaultVal;
+    return val;
 }
 
 function downloadFromBrowser(filename, text) {
@@ -154,14 +183,17 @@ class RhythmGUI {
         var P = this.tool;
         var gui = new dat.GUI();
         this.tool.datgui = gui;
-        gui.add(P, 'pRandOn', 0, 1);
-        gui.add(P, 'pMutate', 0, 1);
-        gui.add(P, 'pAdd', 0, 1);
-        gui.add(P, 'pRemove', 0, 1);
+        if (this.tool.opts.allowMutations) {
+            gui.add(P, 'pRandOn', 0, 1);
+            gui.add(P, 'pMutate', 0, 1);
+            gui.add(P, 'pAdd', 0, 1);
+            gui.add(P, 'pRemove', 0, 1);
+        }
         gui.add(P, "BPM", 0, 160).onChange((bpm) => inst.tool.updateBPM(bpm));
         //gui.add(P, "playing").onChange((v) => inst.tool.setPlaying(v));;
         gui.add(P, "scroll").onChange((v) => inst.scroll = v);
         gui.add(P, "tick");
+        gui.close();
     }
 }
 
@@ -208,6 +240,7 @@ class ButtonGUI extends RhythmGUI {
 class RhythmTool {
     constructor(opts) {
         opts = opts || {};
+        this.opts = opts;
         this.scorer = null;
         this.songs = {};
         this.states = {};
@@ -239,14 +272,10 @@ class RhythmTool {
         this.setRandomBeat();
         this.scorer = new Scorer(this);
         this.instrumentTool = null;
-        this.soundPlayer = new SoundPlayer();
-        this.addSong("songs/triplets.json", "triplets");
-        this.addSong("songs/cowbells24.json", "cowbells24");
-        this.addSong("songs/cowbells33.json", "cowbells33");
-        this.addSong("songs/taikoEx1.json", "tex1", "Taiko Exercise 1");
-        this.addSong("songs/taikoEx2.json", "tex2", "Taiko Exercise 2");
-        this.addSong("songs/taikoEx3.json", "tex3", "Taiko Exercise 3");
-        this.addSong("songs/taikoEx4.json", "tex4", "Taiko Exercise 4");
+        var soundPlayerClass = opts.soundPlayerClass || SamplesPlayer;
+        this.soundPlayer = new soundPlayerClass();
+        var songs = opts.songs || SONGS;
+        this.addSongs(songs);
     }
 
     initJQ() {
@@ -637,6 +666,20 @@ class RhythmTool {
         }
         var specStr = JSON.stringify(spec, null, 3)
         downloadFromBrowser(fileName, specStr);
+    }
+
+    addSongs(songs) {
+        songs.forEach(spec => {
+            if (typeof spec == "string") {
+                console.log("converting string to spec");
+                spec = {id: spec};
+            }
+            console.log("addSong spec", spec);
+            var id = spec.id;
+            var name = spec.name || id;
+            var url = spec.url || sprintf("songs/%s.json", id);
+            this.addSong(url, id, name);
+        })
     }
 
     async addSong(specOrURL, id, name) {

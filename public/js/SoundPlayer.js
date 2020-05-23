@@ -4,6 +4,13 @@
 // playNote is called.
 class SoundPlayer {
     constructor(app) {
+        this.app = app;
+    }
+};
+
+class SamplesPlayer extends SoundPlayer {
+    constructor(app) {
+        super(app);
         console.log("**** SoundPlayer ****", app);
         this.soundPrefix = 'sounds/';
         this.numNotesPlayed = 0;
@@ -68,7 +75,8 @@ class SoundPlayer {
 class BeatsPlayer {
     constructor(opts) {
         opts = opts || {};
-        this.soundPlayer = opts.soundPlayer || new SoundPlayer();
+        //this.soundPlayer = opts.soundPlayer || new SoundPlayer();
+        this.soundPlayer = opts.soundPlayer || new SamplesPlayer();
         this.rvPlayer = null;
         this.app = opts.app;
         this.dynObjDB = null;

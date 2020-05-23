@@ -36,10 +36,14 @@ class CountGraphic extends NoteGraphic {
     }
 
     getLabels() {
-        if (HALFBEATS)
-            return ["one", "and", "two", "and", "three", "and", "four", "and"];
-        return ["one", "two", "three", "four", "five", "six", "seven", "eight"];
-    }
+        if (HALFBEATS) {
+            //return ["one", "and", "two", "and", "three", "and", "four", "and"];
+            return ["1", "&", "2", "&", "3", "&", "4", "&",
+                    "5", "&", "6", "&", "7", "&", "8", "&"];
+        }
+        //return ["one", "two", "three", "four", "five", "six", "seven", "eight"];
+        return ["1", "2", "3", "4", "5", "6", "7", "8"];
+        }
 
     getCountText(c) {
         var b = (c % this.beatsPerMeasure);
@@ -59,7 +63,8 @@ class CountGraphic extends NoteGraphic {
 class JapaneseCount extends CountGraphic {
     getLabels(c) {
         if (HALFBEATS)
-            return ["itchi", "to", "ni", "to", "san", "to", "shi", "to"];
+            return ["itchi", "to", "ni", "to", "san", "to", "shi", "to",
+                    "go", "to", "roku", "to", "shichi", "to", "hachi", "to"];
         return ["itchi", "ni", "san", "shi", "go", "roku", "shichi", "hachi"];
     }
 }
@@ -117,7 +122,7 @@ class RhythmCanvas extends CanvasTool {
             return;
         var pt = this.getMousePos(e);
         //this.gui.setTime(pt.x);
-        console.log("x: ", pt.x);
+        //console.log("x: ", pt.x);
         this.gui.timeGraphic.x = pt.x;
         var t = this.posToTime(pt.x);
         this.gui.tool.setBeatNum(t);
