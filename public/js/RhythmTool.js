@@ -65,7 +65,7 @@ function getParameterByName(name, defaultVal) {
         return defaultVal;
     }
     var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-    val = match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+    var val = match && decodeURIComponent(match[1].replace(/\+/g, ' '));
     //console.log("val:", val);
     if (!val)
         return defaultVal;
