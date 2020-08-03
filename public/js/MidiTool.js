@@ -1,6 +1,10 @@
 //
 // based on example at https://codepen.io/Koenie/pen/qBEQJyK
 //
+/*
+This class is for accessing a midi instrument such as keyboard
+connected to the device.
+*/
 var MMSG = null;
 
 class MidiTool {
