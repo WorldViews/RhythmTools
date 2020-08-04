@@ -675,6 +675,7 @@ PLAYER.setupMidiControlDiv = function () {
     console.log("setupMidiControlDiv");
     if ($("#midiControl").length == 0) {
         console.log("*** no midiControlDiv found ****");
+        $()
         return;
     }
     str = '<button onclick="PLAYER.toggleTracks()">&nbsp;</button>\n' +
@@ -709,23 +710,23 @@ PLAYER.showCompositions = function () {
 }
 
 PLAYER.compositions = [
-    "chopin69",
-    "wtc0",
-    "beethovenSym5m1",
-    "shepard",
-    "BluesRhythm1",
-    "minute_waltz",
-    "jukebox",
-    "risset0",
-    "shimauta1",
-    "passac",
-    "DistantDrums",
-    "EarthandSky",
-    "silkroad",
-    "shores_of_persia",
-    "distdrums",
-    "cello2",
+    "Bach/wtc0",
+    "Bach/passac",
     "Bach/bach_cello_suite",
+    "Classical/chopin69",
+    "Classical/beethovenSym5m1",
+    "Classical/minute_waltz",
+    "NewAge/DistantDrums",
+    "NewAge/EarthandSky",
+    "NewAge/silkroad",
+    "NewAge/distdrums",
+//    "Risset/rissetBeat",
+    "Shepard/shepard",
+    "Shepard/shepard_cmajor",
+    "BluesRhythm1",
+    "jukebox",
+    "shimauta1",
+    "shores_of_persia"
 ];
 
 PLAYER.loadCompositions = function (url) {
