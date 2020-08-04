@@ -413,6 +413,7 @@ PLAYER.checkForEvent = function () {
 PLAYER.handleEventGroup = function (eventGroup) {
     var t0 = eventGroup[0];
     var events = eventGroup[1];
+    //console.log("handleEventGroup");
     for (var k = 0; k < events.length; k++) {
         var event = events[k];
         if (PLAYER.muted[event.track])
@@ -448,6 +449,8 @@ PLAYER.handleEventGroup = function (eventGroup) {
             //console.log("noteOff "+channel+" "+pitch+" "+v+" "+t+dur+PLAYER.delay0);
             MIDI.noteOn(channel, pitch, v, t + PLAYER.delay0);
             MIDI.noteOff(channel, pitch, v, t + dur + PLAYER.delay0);
+            if (PLAYER.noteObserver)
+                PLAYER.noteObserver(channel, pitch, v, t, dur);
             continue;
         }
         console.log("*** unexpected etype: " + etype);
@@ -924,6 +927,10 @@ PLAYER.setupTrackInfo = function () {
         sel.change(instrumentChanged);
     }
     PLAYER.showTempo();
+}
+
+PLAYER.noteObserver = function(channel, pitch, vel, t, dur) {
+    console.log("play note", channel, pitch, vel, dur, t);
 }
 
 PLAYER.toggleTracks = function () {
