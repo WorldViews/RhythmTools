@@ -596,86 +596,8 @@ PLAYER.loadInstrument = function (instr, successFn) {
     PLAYER.setupChannel(0, instr, successFn);
 }
 
-PLAYER.getTimeGraphicR = function () {
-    var y0 = -6;
-    var x0 = PLAYER.graphicsX0;
-    var z0 = 0;
-    var gap = .2;
-    var w = .1;
-    var material = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-    var geometry = new THREE.BoxGeometry(0.001, 300, w);
-    var g = new THREE.Mesh(geometry, material);
-    g._mat = material;
-    g.position.x = x0;
-    g.position.y = y0;
-    g.position.z = z0;
-    return g;
-}
 
-PLAYER.getNoteGraphicR = function (t, dur, pitch, material) {
-    var y0 = -6;
-    var x0 = 0;//PLAYER.graphicsX0;
-    var z0 = 0;
-    var gap = .2;
-    var w = .1;
-    var h = PLAYER.distPerSec * dur;
-    material.color.setHSL((pitch % 12) / 12.0, .6, .5);
-    var geometry = new THREE.BoxGeometry(h, w, w);
-    var ng = new THREE.Mesh(geometry, material);
-    ng._mat = material;
-    ng.position.x = x0 + PLAYER.distPerSec * t + h / 2;
-    ng.position.y = y0 + gap * pitch;
-    ng.position.z = z0;
-    return ng;
-}
-
-PLAYER.getTimeGraphicS = function () {
-    var tDur = PLAYER.midiObj.duration;
-    var c = tDur * PLAYER.distPerSec;
-    var r = c / (2 * Math.PI);
-    var y0 = 4;
-    var x0 = 0;//PLAYER.graphicsX0;
-    var z0 = 0;
-    var w = 10;
-    var material = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-    //var geometry = new THREE.BoxGeometry( 0.001, 300, w );
-    var geometry = new THREE.BoxGeometry(0.01, 300, 2);
-    var g = new THREE.Mesh(geometry, material);
-    g._mat = material;
-    material.transparent = true;
-    material.opacity = .3;
-    g.position.x = x0;
-    g.position.y = y0;
-    g.position.z = z0 + r;
-    console.log("**** getTimeGraphicS " + JSON.stringify(g.position));
-    return g;
-}
-
-PLAYER.getNoteGraphicS = function (t, dur, pitch, material) {
-    var tDur = PLAYER.midiObj.duration;
-    var c = tDur * PLAYER.distPerSec;
-    var r = c / (2 * Math.PI);
-    var y0 = 4;
-    var x0 = 0;//PLAYER.graphicsX0;
-    var z0 = 0;
-    var gap = .2;
-    var w = .1;
-    var h = PLAYER.distPerSec * dur;
-    material.color.setHSL((pitch % 12) / 12.0, .6, .5);
-    var geometry = new THREE.BoxGeometry(h, w, w);
-    var ng = new THREE.Mesh(geometry, material);
-    ng._mat = material;
-    var a = 2 * Math.PI * (t + dur / 2) / tDur;
-    var p = ng.position;
-    p.x = x0 + r * Math.sin(a);
-    p.z = z0 + r * Math.cos(a);
-    p.y = y0 + gap * pitch;
-    //console.log("getNoteGraphicS a: "+a+"  r: "+r+"  x: "+p.x+"  y: "+p.y+"  z: "+p.z);
-    ng.rotation.y = a;
-    return ng;
-}
-
-PLAYER.graphicsHandleEventGroup = function (gObj, eventGroup) {
+PLAYER.graphicsHandleEventGroup = function (scene, eventGroup) {
     var t0 = eventGroup[0];
     var events = eventGroup[1];
     for (var k = 0; k < events.length; k++) {
@@ -690,42 +612,18 @@ PLAYER.graphicsHandleEventGroup = function (gObj, eventGroup) {
         //var t = t0/PLAYER.ticksPerBeat;
         var t = t0 / PLAYER.ticksPerSec;
         //console.log(t0+" graphic for note pitch: "+pitch+" v:"+v+" dur: "+dur);
-        var material = new THREE.MeshPhongMaterial({ color: 0x00dddd });
-        var noteGraphic;
-        if (PLAYER.graphicsSpiral)
-            noteGraphic = PLAYER.getNoteGraphicS(t, dur, pitch, material);
-        else
-            noteGraphic = PLAYER.getNoteGraphicR(t, dur, pitch, material);
-        gObj.add(noteGraphic);
+        scene.addNote(t, dur, pitch);
     }
 }
 
 PLAYER.addNoteGraphics = function (scene, midiTrack) {
-    if (PLAYER.graphics) {
-        scene.remove(PLAYER.graphics);
-    }
+    scene.clearNotes();
 
     console.log("Adding note graphics...");
     var events = midiTrack.seq;
-    PLAYER.graphics = new THREE.Object3D();
-    PLAYER.notesGraphic = new THREE.Object3D();
-    PLAYER.graphics.add(PLAYER.notesGraphic);
-    if (PLAYER.graphicsSpiral)
-        PLAYER.timeGraphic = PLAYER.getTimeGraphicS();
-    else
-        PLAYER.timeGraphic = PLAYER.getTimeGraphicR();
     for (var i = 0; i < events.length; i++) {
-        PLAYER.graphicsHandleEventGroup(PLAYER.notesGraphic, events[i]);
+        PLAYER.graphicsHandleEventGroup(scene, events[i]);
     }
-    PLAYER.graphics.add(PLAYER.timeGraphic)
-    if (PLAYER.graphicsScale) {
-        var s = PLAYER.graphicsScale;
-        PLAYER.graphics.scale.x = s[0];
-        PLAYER.graphics.scale.y = s[1];
-        PLAYER.graphics.scale.z = s[2];
-    }
-    scene.add(PLAYER.graphics);
-    return PLAYER.graphics;
 }
 
 PLAYER.prevPt = null;
