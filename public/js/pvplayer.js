@@ -926,6 +926,3 @@ PLAYER.toggleTracks = function () {
     }
 }
 
-$(document).ready(function () {
-    PLAYER.setupTrackInfo();
-});

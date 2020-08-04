@@ -58,9 +58,9 @@
     </div>
     <script>
 
-        function report(s) {
-            console.log(s);
-        }
+       // function report(s) {
+       //     console.log(s);
+       // }
 
 
         function startUpdates() {
@@ -73,40 +73,14 @@
             render();
         }
 
-        function loadInstrument(instr, successFn) {
-            instrument = instr;
-            MIDI.loadPlugin({
-                soundfontUrl: "./soundfont/",
-                instrument: instrument,
-                onprogress: function (state, progress) {
-                    MIDI.loader.setValue(progress * 100);
-                },
-                onprogress: function (state, progress) {
-                    MIDI.loader.setValue(progress * 100);
-                },
-                onsuccess: function () {
-                    MIDI.programChange(0, instr);
-                    if (successFn)
-                        successFn();
-                }
-            });
-        }
-
-        var initInstrument = function () {
-            report("***** setting up midi ******");
-            var instrument;
-            instrument = "acoustic_grand_piano";
-            //instrument = "choir_aahs";
-            MIDI.loader = new sketch.ui.Timer;
-            loadInstrument("acoustic_grand_piano");
-        }
 
         $(document).ready(function () {
+            //PLAYER.setupTrackInfo();
             startUpdates();
             //P = {};
             //setupGUI(["PLAYER.ticksPerBeat"]);
             //PLAYER.scene = P.scene;
-            initInstrument();
+            //initInstrument();
         });
 
     </script>
