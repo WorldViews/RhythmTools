@@ -25,6 +25,7 @@ PLAYER.instruments = {};
 PLAYER.loop = false;
 PLAYER.USE_NEW_METHOD = true;
 PLAYER.midiPrefix = "midi/";
+PLAYER.soundfontUrl = "/rhythm/soundfont/"
 
 //PLAYER.tracks = {}
 
@@ -470,22 +471,6 @@ PLAYER.programChange = function (trackNo, ch, inst) {
     }
 }
 
-/*
-PLAYER.setupChannels = function(instruments)
-{
-    if (!instruments)
-	instruments = PLAYER.instruments;
-    console.log("setupChannels "+JSON.stringify(instruments));
-    for (var chNo in instruments) {
-	var inst = instruments[chNo];
-	console.log("ch "+chNo+" instrument: "+inst);
-        if (PLAYER.loadedInstruments[inst]) {
-	    console.log("instrument already loaded "+inst);
-        }
-	PLAYER.setupChannel(chNo, inst);
-    }
-}
-*/
 
 var instMap = {
     0: "acoustic_grand_piano",
@@ -540,7 +525,8 @@ PLAYER.loadInstruments = function (successFn) {
     console.log("instruments: " + instruments);
     MIDI.loadPlugin({
         //soundfontUrl: "./soundfont/",
-        soundfontUrl: "/rhythm/soundfont/",
+        //soundfontUrl: "/rhythm/soundfont/",
+        soundfontUrl: PLAYER.soundfontUrl,
         instruments: instruments,
         onprogress: function (state, progress) {
             MIDI.loader.setValue(progress * 100);
@@ -572,7 +558,7 @@ PLAYER.setupChannel = function (chNo, inst, successFn) {
     console.log("setupInstrument chNo: " + chNo + " inst: " + inst + " name: " + instName);
     instrument = instName;
     MIDI.loadPlugin({
-        soundfontUrl: "./soundfont/",
+        soundfontUrl: PLAYER.soundfontUrl,
         instrument: instName,
         onprogress: function (state, progress) {
             MIDI.loader.setValue(progress * 100);
