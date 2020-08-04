@@ -62,7 +62,7 @@ class DynamicObject {
     setPlayTime(t, dynObjDB)
     {
         if (t < this.startTime || t > this.endTime+this.slack) {
-            //report("dynObj "+this.objectId+" t: "+t+" outside range "+this.startTime+" "+this.endTime);
+            //console.log("dynObj "+this.objectId+" t: "+t+" outside range "+this.startTime+" "+this.endTime);
             if (this.prevRec == null)
                 return;
             dynObjDB.postMessage({'msgType': 'v3d.delete',
@@ -74,10 +74,10 @@ class DynamicObject {
         //var rec = this.findLastRec(t);
         var rec = this.findRecForTime(t);
         if (rec == this.prevRec) {
-            //report("not sending duplicate messages");
+            //console.log("not sending duplicate messages");
             return;
         }
-        //report("rec: "+JSON.stringify(rec));
+        //console.log("rec: "+JSON.stringify(rec));
         var msg = cloneObject(rec);
         msg['id'] = this.objectId;
         msg['msgType'] = "v3d.setProps";
@@ -90,7 +90,7 @@ class DynamicObject {
     {
         //console.log("dynObj.setPlayTime", t);
         if (t < this.startTime || t > this.endTime) {
-            //report("dynObj "+this.objectId+" t: "+t+" outside range "+this.startTime+" "+this.endTime);
+            //console.log("dynObj "+this.objectId+" t: "+t+" outside range "+this.startTime+" "+this.endTime);
             if(t > this.endTime){
                 if(!this.hasEnded && this.prevRec != null){
                     console.log("****** dynObj has reached end...");

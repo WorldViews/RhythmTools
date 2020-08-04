@@ -28,10 +28,21 @@ PLAYER.midiPrefix = "midi/";
 
 //PLAYER.tracks = {}
 
+PLAYER.startUpdates = function() {
+    var render = function () {
+        //console.log("render n: "+steps);			  
+        requestAnimationFrame(render);
+        if (PLAYER)
+            PLAYER.update();
+    }
+    render();
+}
+
+
 PLAYER.startPlaying = function () {
-    report("startPlaying");
+    console.log("startPlaying");
     if (PLAYER.midiObj == null) {
-        report("No midi loaded");
+        console.log("No midi loaded");
         return;
     }
     $("#midiTogglePlaying").text("Pause");
@@ -41,7 +52,7 @@ PLAYER.startPlaying = function () {
 }
 
 PLAYER.pausePlaying = function () {
-    report("Pause Playing");
+    console.log("Pause Playing");
     PLAYER.isPlaying = false;
     PLAYER.setPlayTime(PLAYER.getPlayTime());
     $("#midiTogglePlaying").text("Play");
@@ -50,7 +61,7 @@ PLAYER.pausePlaying = function () {
 PLAYER.stopPlaying = PLAYER.pausePlaying;
 
 PLAYER.rewind = function () {
-    report("rewind");
+    console.log("rewind");
     PLAYER.i = 0;
     PLAYER.setPlayTime(0);
     PLAYER.crankAngle0 = PLAYER.crankAngle;
@@ -70,7 +81,7 @@ PLAYER.playMelody = function (name) {
 }
 
 PLAYER.loadMelody = function (name, autoStart) {
-    report("PLAYER.loadMelody " + name + " autostart: " + autoStart);
+    console.log("PLAYER.loadMelody " + name + " autostart: " + autoStart);
     PLAYER.stopPlaying();
     var melodyUrl = PLAYER.midiPrefix + name + ".json";
     $.getJSON(melodyUrl, function (obj) { PLAYER.playMidiObj(obj, autoStart) });
@@ -84,11 +95,11 @@ PLAYER.playMidiObj = function (obj, autoStart) {
     PLAYER.i = 0;
     PLAYER.setPlayTime(0);
     if (PLAYER.scene) {
-        report("***** adding Note Graphics ******");
+        console.log("***** adding Note Graphics ******");
         PLAYER.addNoteGraphics(PLAYER.scene, PLAYER.midiObj);
     }
     else {
-        report("***** No registered scene so not adding Note Graphics ******");
+        console.log("***** No registered scene so not adding Note Graphics ******");
     }
     if (autoStart)
         PLAYER.startPlaying();
@@ -100,21 +111,21 @@ instruments are requred, and also arranges a sequence of events
 grouped by times.
  */
 function processMidiObj(midiObj) {
-    report("processMidiObj");
+    console.log("processMidiObj");
     if (midiObj.type != "MidiObj") {
-        report("midiObj has unexpected type " + midiObj.type);
+        console.log("midiObj has unexpected type " + midiObj.type);
     }
     var tracks = midiObj.tracks;
     var ntracks = tracks.length;
-    report("num tracks " + ntracks);
-    report("Now merging " + ntracks + " tracks.");
+    console.log("num tracks " + ntracks);
+    console.log("Now merging " + ntracks + " tracks.");
     seqTimes = [];
     seqEvents = {};
     if (midiObj.resolution) {
         PLAYER.ticksPerBeat = midiObj.resolution;
     }
     else {
-        report("**** WARNING NO RESOLUTON in the MidiObject ****");
+        console.log("**** WARNING NO RESOLUTON in the MidiObject ****");
         PLAYER.ticksPerBeat = 500;
     }
 
@@ -127,7 +138,7 @@ function processMidiObj(midiObj) {
     PLAYER.instruments = {};
     PLAYER.loop = false;
     if (midiObj.loop) {
-        report("***set to loop");
+        console.log("***set to loop");
         PLAYER.loop = true;
     }
     for (var i = 0; i < tracks.length; i++) {
@@ -163,7 +174,7 @@ function processMidiObj(midiObj) {
             };
         }
         if (track.instrument) {
-            report("track.instrument: " + track.instrument);
+            console.log("track.instrument: " + track.instrument);
             //PLAYER.instruments[track.instrument] = 1;
             PLAYER.instruments[track.instrument] = 1;
         }
@@ -172,7 +183,7 @@ function processMidiObj(midiObj) {
             PLAYER.instruments[0] = 1;
         }
         if (track.instruments) {
-            report("track.instruments: " + track.instruments);
+            console.log("track.instruments: " + track.instruments);
             for (var k = 0; k < PLAYER.instruments.length; k++) {
                 var inst = PLAYER.instruments[k];
                 PLAYER.instruments[inst] = 1;
@@ -189,7 +200,7 @@ function processMidiObj(midiObj) {
                 if (ev.type == "tempo") {
                     var bpm = ev.bpm;
                     var mpqn = ev.mpqn;
-                    report("tempo bpm: " + bpm + " mpqn: " + mpqn);
+                    console.log("tempo bpm: " + bpm + " mpqn: " + mpqn);
                     if (midiObj.tempo)
                         midiObj.tempo.push(ev);
                     else
@@ -200,10 +211,10 @@ function processMidiObj(midiObj) {
                     var gch = ch;
                     var inst = ev.instrument;
                     var tchName = "T" + i + "_" + ch + "_" + gch;
-                    report(">> " + tchName);
+                    console.log(">> " + tchName);
                     PLAYER.trackChannels[tchName].instrument = inst;
                 }
-                //report("ev: "+JSON.stringify(ev)+" "+ev.track);
+                //console.log("ev: "+JSON.stringify(ev)+" "+ev.track);
                 if (seqEvents[t0]) {
                     seqEvents[t0][1].push(ev);
                 }
@@ -222,25 +233,25 @@ function processMidiObj(midiObj) {
         var evGroup = seqEvents[t];
         seq.push([t, evGroup[1]]);
         maxTime = t;//
-        //report("t: "+ t+ " nevents: "+evGroup.length);
+        //console.log("t: "+ t+ " nevents: "+evGroup.length);
     }
     midiObj.seq = seq;
     //midiObj.duration = maxTime/PLAYER.ticksPerBeat;
     midiObj.duration = maxTime / PLAYER.ticksPerSec;
     PLAYER.loadInstruments();
     if (!midiObj.tempo) {
-        report("***** tempo unknown");
+        console.log("***** tempo unknown");
     }
     else {
         var tempos = midiObj.tempo;
-        report("tempos: " + tempos.length);
-        //report("tempos: "+JSON.stringify(tempos));
+        console.log("tempos: " + tempos.length);
+        //console.log("tempos: "+JSON.stringify(tempos));
         if (tempos.length > 0) {
             var tempo = tempos[0];
             if (tempo.bpm) {
                 PLAYER.beatsPerMin = tempo.bpm;
                 PLAYER.ticksPerSec = PLAYER.ticksPerBeat * tempo.bpm / 60;
-                report("tempo bpm: " + tempo.bpm + " -> ticksPerSec: " + PLAYER.ticksPerSec);
+                console.log("tempo bpm: " + tempo.bpm + " -> ticksPerSec: " + PLAYER.ticksPerSec);
             }
             if (tempo.mpqn) {
                 var mpqn = tempo.mpqn;
@@ -249,7 +260,7 @@ function processMidiObj(midiObj) {
                 var bpqn = 1; // really depends on time signature
                 var bps = bpqn * qnps;
                 PLAYER.ticksPerSec = PLAYER.ticksPerBeat * bps;
-                report("tempo mpqn: " + tempo.mpqn + " -> bps: " + 60 * bps +
+                console.log("tempo mpqn: " + tempo.mpqn + " -> bps: " + 60 * bps +
                     " ticksPerSec: " + PLAYER.ticksPerSec);
             }
         }
@@ -259,7 +270,7 @@ function processMidiObj(midiObj) {
         PLAYER.showTempo();
     }
     catch (e) {
-        report("err: " + e);
+        console.log("err: " + e);
     }
     return midiObj;
     //    return midiObj.tracks[ntracks-1];
@@ -272,7 +283,7 @@ function processMidiObj(midiObj) {
   each time that one or more new notes are played.
  */
 PLAYER.playSync = function (obj) {
-    report("playSync");
+    console.log("playSync");
     PLAYER.seqNum += 1;
     //PLAYER.i = 0;
     PLAYER.delay0 = 0;
@@ -305,7 +316,7 @@ PLAYER.getPlayTime = function () {
 }
 
 PLAYER.setPlayTime = function (t) {
-    report("setPlayTime t: " + t);
+    console.log("setPlayTime t: " + t);
     PLAYER.lastEventPlayTime = t;
     PLAYER.lastEventClockTime = Date.now() / 1000.0;
     //TODO: should set PLAYER.i to appopriate place...
@@ -314,13 +325,13 @@ PLAYER.setPlayTime = function (t) {
 //
 // THis works and is self scheduling...
 PLAYER.playNextStep = function (seqNum) {
-    //report("playNextStep "+PLAYER.i);
+    //console.log("playNextStep "+PLAYER.i);
     if (!PLAYER.isPlaying) {
-        report("player stopped!");
+        console.log("player stopped!");
         return;
     }
     if (seqNum != PLAYER.seqNum) {
-        report("***** old sequence detected - dropping it *****");
+        console.log("***** old sequence detected - dropping it *****");
         return
     }
     var evGroup = PLAYER.events[PLAYER.i];
@@ -333,12 +344,12 @@ PLAYER.playNextStep = function (seqNum) {
     PLAYER.i += 1;
     if (PLAYER.i >= PLAYER.events.length) {
         if (PLAYER.loop) {
-            report("Finished loop");
+            console.log("Finished loop");
             PLAYER.i = 0;
             PLAYER.lastEventPlayTime = 0;
         }
         else {
-            report("FInished playing");
+            console.log("FInished playing");
             PLAYER.isPlaying = false;
             PLAYER.stopPlaying();
             return;
@@ -354,9 +365,9 @@ PLAYER.playNextStep = function (seqNum) {
 
 //
 PLAYER.checkForEvent = function () {
-    //report("playNextStep "+PLAYER.i);
+    //console.log("playNextStep "+PLAYER.i);
     if (!PLAYER.isPlaying) {
-        report("player stopped!");
+        console.log("player stopped!");
         return;
     }
     var pt = PLAYER.getPlayTime();
@@ -387,12 +398,12 @@ PLAYER.checkForEvent = function () {
     PLAYER.i += 1;
     if (PLAYER.i >= PLAYER.events.length) {
         if (PLAYER.loop) {
-            report("Finished loop");
+            console.log("Finished loop");
             PLAYER.i = 0;
             PLAYER.lastEventPlayTime = 0;
             return;
         }
-        report("Finished playing");
+        console.log("Finished playing");
         PLAYER.isPlaying = false;
         PLAYER.stopPlaying();
         return;
@@ -412,47 +423,47 @@ PLAYER.handleEventGroup = function (eventGroup) {
         if (etype == "tempo") {
             var bpm = event.bpm;
             var mpqn = event.mpqn;
-            report("tempo bpm: " + bpm + "  mpqn: " + mpqn);
+            console.log("tempo bpm: " + bpm + "  mpqn: " + mpqn);
             continue;
         }
         var channel = event.channel;
         if (etype == "programChange") {
             var inst = event.instrument;
-            report("programChange ch: " + channel + " inst: " + inst);
+            console.log("programChange ch: " + channel + " inst: " + inst);
             //MIDI.programChange(channel, inst);
             PLAYER.programChange(event.track, channel, inst);
             continue;
         }
         if (etype == "note") {
             var note = event;
-            //report("note: "+JSON.stringify(note));
+            //console.log("note: "+JSON.stringify(note));
             var pitch = note.pitch;
             var v = note.v;
             //var dur = note.dur/PLAYER.ticksPerBeat;
             var dur = note.dur / PLAYER.ticksPerSec;
             if (t0_ != t0) {
-                report("*** mismatch t0: " + t0 + " t0_: " + t0_);
+                console.log("*** mismatch t0: " + t0 + " t0_: " + t0_);
             }
-            //report("noteOn "+channel+" "+pitch+" "+v+" "+t+PLAYER.delay0);
-            //report("noteOff "+channel+" "+pitch+" "+v+" "+t+dur+PLAYER.delay0);
+            //console.log("noteOn "+channel+" "+pitch+" "+v+" "+t+PLAYER.delay0);
+            //console.log("noteOff "+channel+" "+pitch+" "+v+" "+t+dur+PLAYER.delay0);
             MIDI.noteOn(channel, pitch, v, t + PLAYER.delay0);
             MIDI.noteOff(channel, pitch, v, t + dur + PLAYER.delay0);
             continue;
         }
-        report("*** unexpected etype: " + etype);
+        console.log("*** unexpected etype: " + etype);
     }
 }
 
 PLAYER.programChange = function (trackNo, ch, inst) {
-    report("PLAYER.programChange trackNo: " + trackNo + " ch: " + ch + " inst: " + inst);
+    console.log("PLAYER.programChange trackNo: " + trackNo + " ch: " + ch + " inst: " + inst);
     MIDI.programChange(ch, inst);
     try {
         var selName = "selectT" + trackNo + "_" + ch + "_" + ch;
-        report("programChange sel: " + selName + " " + inst);
+        console.log("programChange sel: " + selName + " " + inst);
         $("#" + selName).val(inst);
     }
     catch (e) {
-        report("err: " + e);
+        console.log("err: " + e);
     }
 }
 
@@ -461,12 +472,12 @@ PLAYER.setupChannels = function(instruments)
 {
     if (!instruments)
 	instruments = PLAYER.instruments;
-    report("setupChannels "+JSON.stringify(instruments));
+    console.log("setupChannels "+JSON.stringify(instruments));
     for (var chNo in instruments) {
 	var inst = instruments[chNo];
-	report("ch "+chNo+" instrument: "+inst);
+	console.log("ch "+chNo+" instrument: "+inst);
         if (PLAYER.loadedInstruments[inst]) {
-	    report("instrument already loaded "+inst);
+	    console.log("instrument already loaded "+inst);
         }
 	PLAYER.setupChannel(chNo, inst);
     }
@@ -499,7 +510,7 @@ PLAYER.getInstName = function (inst) {
     if (typeof inst == typeof "str")
         return inst;
     var instObj = MIDI.GM.byId[inst];
-    report("getInstName: " + JSON.stringify(instObj));
+    console.log("getInstName: " + JSON.stringify(instObj));
     if (instObj) {
         return instObj.id;
     }
@@ -507,7 +518,7 @@ PLAYER.getInstName = function (inst) {
 }
 
 PLAYER.setupInstruments = function () {
-    report("setupInstruments");
+    console.log("setupInstruments");
     for (var tchName in PLAYER.trackChannels) {
         tch = PLAYER.trackChannels[tchName];
         if (tch.instrument) {
@@ -517,13 +528,13 @@ PLAYER.setupInstruments = function () {
 }
 
 PLAYER.loadInstruments = function (successFn) {
-    report("loadInstruments " + JSON.stringify(PLAYER.instruments));
+    console.log("loadInstruments " + JSON.stringify(PLAYER.instruments));
     var instruments = [];
     for (var id in PLAYER.instruments) {
         var instObj = MIDI.GM.byId[id];
         instruments.push(instObj.id);
     }
-    report("instruments: " + instruments);
+    console.log("instruments: " + instruments);
     MIDI.loadPlugin({
         //soundfontUrl: "./soundfont/",
         soundfontUrl: "/rhythm/soundfont/",
@@ -536,10 +547,10 @@ PLAYER.loadInstruments = function (successFn) {
                 MIDI.loader.setValue(progress * 100);
         },
         onsuccess: function () {
-            report("** finished with loading instruments");
+            console.log("** finished with loading instruments");
             for (var i = 0; i < instruments.length; i++) {
                 var inst = instruments[i];
-                report("loaded " + inst);
+                console.log("loaded " + inst);
                 PLAYER.loadedInstruments[inst] = true;
             }
             if (successFn)
@@ -552,10 +563,10 @@ PLAYER.loadInstruments = function (successFn) {
 PLAYER.setupChannel = function (chNo, inst, successFn) {
     var instName = PLAYER.getInstName(inst);
     if (chNo == 9) {
-        report("Special Hack using gunshot");
+        console.log("Special Hack using gunshot");
         instName = "gunshot";
     }
-    report("setupInstrument chNo: " + chNo + " inst: " + inst + " name: " + instName);
+    console.log("setupInstrument chNo: " + chNo + " inst: " + inst + " name: " + instName);
     instrument = instName;
     MIDI.loadPlugin({
         soundfontUrl: "./soundfont/",
@@ -578,7 +589,7 @@ PLAYER.setupChannel = function (chNo, inst, successFn) {
 
 
 PLAYER.loadInstrument = function (instr, successFn) {
-    report("loadInstrument " + instr);
+    console.log("loadInstrument " + instr);
     PLAYER.setupChannel(0, instr, successFn);
 }
 
@@ -633,7 +644,7 @@ PLAYER.getTimeGraphicS = function () {
     g.position.x = x0;
     g.position.y = y0;
     g.position.z = z0 + r;
-    report("**** getTimeGraphicS " + JSON.stringify(g.position));
+    console.log("**** getTimeGraphicS " + JSON.stringify(g.position));
     return g;
 }
 
@@ -656,7 +667,7 @@ PLAYER.getNoteGraphicS = function (t, dur, pitch, material) {
     p.x = x0 + r * Math.sin(a);
     p.z = z0 + r * Math.cos(a);
     p.y = y0 + gap * pitch;
-    //report("getNoteGraphicS a: "+a+"  r: "+r+"  x: "+p.x+"  y: "+p.y+"  z: "+p.z);
+    //console.log("getNoteGraphicS a: "+a+"  r: "+r+"  x: "+p.x+"  y: "+p.y+"  z: "+p.z);
     ng.rotation.y = a;
     return ng;
 }
@@ -675,7 +686,7 @@ PLAYER.graphicsHandleEventGroup = function (gObj, eventGroup) {
         var dur = note.dur / PLAYER.ticksPerSec;
         //var t = t0/PLAYER.ticksPerBeat;
         var t = t0 / PLAYER.ticksPerSec;
-        //report(t0+" graphic for note pitch: "+pitch+" v:"+v+" dur: "+dur);
+        //console.log(t0+" graphic for note pitch: "+pitch+" v:"+v+" dur: "+dur);
         var material = new THREE.MeshPhongMaterial({ color: 0x00dddd });
         var noteGraphic;
         if (PLAYER.graphicsSpiral)
@@ -691,7 +702,7 @@ PLAYER.addNoteGraphics = function (scene, midiTrack) {
         scene.remove(PLAYER.graphics);
     }
 
-    report("Adding note graphics...");
+    console.log("Adding note graphics...");
     var events = midiTrack.seq;
     PLAYER.graphics = new THREE.Object3D();
     PLAYER.notesGraphic = new THREE.Object3D();
@@ -724,7 +735,7 @@ PLAYER.update = function () {
     clockTime = Date.now() / 1000;
     var pt = PLAYER.getPlayTime();
     if (PLAYER.prevPt && pt < PLAYER.prevPt) {
-        report("**** pt < prevPt ****");
+        console.log("**** pt < prevPt ****");
     }
     PLAYER.prevPt = pt;
     //$("#midiStatus").html("Time: "+PLAYER.fmt(pt));
@@ -743,40 +754,40 @@ PLAYER.update = function () {
 // These have to do with the Web GUI for midi control
 //
 function muteCheckboxChanged(e) {
-    report("muteCheckboxChanged")
+    console.log("muteCheckboxChanged")
     var id = $(this).attr('id');
     var i = id.lastIndexOf("_");
     var ch = id.slice(i + 1);
-    report("id: " + id + " ch: " + ch);
+    console.log("id: " + id + " ch: " + ch);
     var val = $(this).is(":checked");
     //var val = $("#"+mute_id).is(":checked");
     val = eval(val);
-    report("mute_id: " + id + " ch: " + ch + "  val: " + val);
+    console.log("mute_id: " + id + " ch: " + ch + "  val: " + val);
     PLAYER.muted[ch] = val;
 }
 
 function instrumentChanged(e) {
-    report("instrumentChanged")
+    console.log("instrumentChanged")
     var id = $(this).attr('id');
     var i = id.lastIndexOf("_");
     var ch = id.slice(i + 1);
     var val = $(this).val();
     val = eval(val);
     //val = val - 1; // indices start at 0 but names start at 1
-    report("id: " + id + " ch: " + ch + "  val: " + val);
+    console.log("id: " + id + " ch: " + ch + "  val: " + val);
     PLAYER.setupChannel(ch, val);
 }
 
 PLAYER.compositionChanged = function (e) {
     var name = $(this).val();
-    report("compositionChanged: " + name);
+    console.log("compositionChanged: " + name);
     PLAYER.loadMelody(name);
 }
 
 PLAYER.setupMidiControlDiv = function () {
-    report("setupMidiControlDiv");
+    console.log("setupMidiControlDiv");
     if ($("#midiControl").length == 0) {
-        report("*** no midiControlDiv found ****");
+        console.log("*** no midiControlDiv found ****");
         return;
     }
     str = '<button onclick="PLAYER.toggleTracks()">&nbsp;</button>\n' +
@@ -799,13 +810,13 @@ PLAYER.setupMidiControlDiv = function () {
 }
 
 PLAYER.showCompositions = function () {
-    report("showCompositions");
+    console.log("showCompositions");
     var sel = $("#midiCompositionSelection");
     sel.html("");
     sel.append($('<option>', { value: "None", text: "(None)" }));
     for (var i = 0; i < PLAYER.compositions.length; i++) {
         var compName = PLAYER.compositions[i];
-        report("**** adding comp " + compName);
+        console.log("**** adding comp " + compName);
         sel.append($('<option>', { value: compName, text: compName }));
     }
 }
@@ -831,29 +842,29 @@ PLAYER.compositions = [
 ];
 
 PLAYER.loadCompositions = function (url) {
-    report("LoadCompositions " + url);
+    console.log("LoadCompositions " + url);
     $.getJSON(url, function (obj) { PLAYER.compositionsLoaded(obj) });
 }
 
 PLAYER.compositionsLoaded = function (obj) {
-    report("compositionsLoaded");
-    report("comps: " + obj);
+    console.log("compositionsLoaded");
+    console.log("comps: " + obj);
     PLAYER.compositions = obj;
     PLAYER.showCompositions();
 }
 
 PLAYER.timingChanged = function (e) {
-    report("tpbChanged");
+    console.log("tpbChanged");
     var bpm, tpb;
     try {
         bpm = eval($("#midiBPM").val());
         tpb = eval($("#midiTPB").val());
     }
     catch (e) {
-        report("err: " + e);
+        console.log("err: " + e);
         return;
     }
-    report("tpb: " + tpb + " bpm: " + bpm);
+    console.log("tpb: " + tpb + " bpm: " + bpm);
     if (bpm)
         PLAYER.beatsPerMin = bpm;
     if (tpb)
@@ -870,11 +881,11 @@ PLAYER.showTempo = function () {
 
 
 PLAYER.setupTrackInfo = function () {
-    report("showTrackInfo");
-    //report("trackChannels: "+JSON.stringify(PLAYER.trackChannels));
+    console.log("showTrackInfo");
+    //console.log("trackChannels: "+JSON.stringify(PLAYER.trackChannels));
     var d = $("#midiTrackInfo");
     if (d.length == 0) {
-        report("**** No track info div found *****");
+        console.log("**** No track info div found *****");
         PLAYER.setupMidiControlDiv();
     }
     d.html('<table id="midiTable"></table>');
@@ -884,10 +895,10 @@ PLAYER.setupTrackInfo = function () {
         var ch = trackChannel.channel;
         if (trackChannel.track.numNotes == 0)
             continue;
-        report("Tchannel: " + tchName + " ch: " + ch);
+        console.log("Tchannel: " + tchName + " ch: " + ch);
         var mute_id = "mute" + tchName;
         var select_id = "select" + tchName;
-        report("mute_id: " + mute_id + "   select_id: " + select_id);
+        console.log("mute_id: " + mute_id + "   select_id: " + select_id);
         var s = '<td>TCH_NAME</td>';
         s += '<td><input type="checkbox" id="MUTE_ID"></td>\n';
         s += '<td><select id="SELECT_ID"></select></td>\n';
@@ -906,7 +917,7 @@ PLAYER.setupTrackInfo = function () {
             sel.append($('<option>', { value: i, text: instName }));
         }
         var inst = trackChannel.instrument;
-        report("instrument: " + inst);
+        console.log("instrument: " + inst);
         if (inst) {
             sel.val(inst);
         }
@@ -916,7 +927,7 @@ PLAYER.setupTrackInfo = function () {
 }
 
 PLAYER.toggleTracks = function () {
-    report("toggleTracks");
+    console.log("toggleTracks");
     var d = $("#midiTrackInfo");
     if (d.is(":visible")) {
         $("#midiTrackInfo").hide();
