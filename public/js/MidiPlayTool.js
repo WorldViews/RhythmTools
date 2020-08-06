@@ -1,4 +1,5 @@
 
+"use strict"
 
 var instMap = {
     0: "acoustic_grand_piano",
@@ -37,9 +38,6 @@ class MidiPlayTool {
         player.seqNum = 0;
         player.graphicsX0 = -8;
         player.graphicsSpiral = true;
-        player.crankFactor = 0;
-        player.crankAngle0 = null;
-        player.crankAngle = null;
         player.instruments = {};
         player.loop = false;
         player.USE_NEW_METHOD = true;
@@ -89,7 +87,6 @@ class MidiPlayTool {
             return;
         }
         $("#midiTogglePlaying").text("Pause");
-        this.crankAngle0 = this.crankAngle;
         this.setupInstruments();
         this.playSync(this.midiObj);
     }
@@ -110,7 +107,6 @@ class MidiPlayTool {
         console.log("rewind");
         this.i = 0;
         this.setPlayTime(0);
-        this.crankAngle0 = this.crankAngle;
     }
 
     togglePlaying() {
@@ -189,8 +185,8 @@ class MidiPlayTool {
             console.log("***set to loop");
             player.loop = true;
         }
-        for (var i = 0; i < tracks.length; i++) {
-            var track = tracks[i];
+        for (var trackNo = 0; trackNo < tracks.length; trackNo++) {
+            var track = tracks[trackNo];
             var ntchs = 0;
             //if (track.numNotes === 0)
             //    continue;
@@ -199,12 +195,12 @@ class MidiPlayTool {
                     var ch = track.channels[k];
                     var gch = ch; // global channel assignment
                     //var tchName = "T"+i+"."+k+"_"+ch;
-                    var tchName = "T" + i + "_" + ch + "_" + gch;
+                    var tchName = "T" + trackNo + "_" + ch + "_" + gch;
                     player.trackChannels[tchName] = {
                         'id': tchName,
                         'channel': ch,
                         'track': track,
-                        'trackNo': i
+                        'trackNo': trackNo
                     };
                     ntchs++;
                 }
@@ -213,11 +209,11 @@ class MidiPlayTool {
                 // No channels were assigned - we will use 0
                 var ch = 0;
                 var gch = 0; // 
-                var tchName = "T" + i + "_" + ch + "_" + gch;
+                var tchName = "T" + trackNo + "_" + ch + "_" + gch;
                 player.trackChannels[tchName] = {
                     'id': tchName,
                     'channel': ch,
-                    'trackNo': i,
+                    'trackNo': trackNo,
                     'track': track
                 };
             }
@@ -242,21 +238,22 @@ class MidiPlayTool {
                 var evs = evGroup[1];
                 for (var k = 0; k < evs.length; k++) {
                     var ev = evs[k];
-                    ev.track = i;
+                    ev.track = trackNo;
                     if (ev.type == "tempo") {
                         var bpm = ev.bpm;
                         var mpqn = ev.mpqn;
-                        console.log("tempo bpm: " + bpm + " mpqn: " + mpqn);
+                        //console.log("tempo bpm: " + bpm + " mpqn: " + mpqn);
                         if (midiObj.tempo)
                             midiObj.tempo.push(ev);
                         else
                             midiObj.tempo = [ev];
                     }
                     if (ev.type == "programChange") {
+                        console.log(">>> programChange", ev);
                         var ch = ev.channel;
                         var gch = ch;
                         var inst = ev.instrument;
-                        var tchName = "T" + i + "_" + ch + "_" + gch;
+                        var tchName = "T" + trackNo + "_" + ch + "_" + gch;
                         console.log(">> " + tchName);
                         player.trackChannels[tchName].instrument = inst;
                     }
@@ -318,10 +315,21 @@ class MidiPlayTool {
         catch (e) {
             console.log("err: " + e);
         }
+        this.dump();
         return midiObj;
         //    return midiObj.tracks[ntracks-1];
     }
 
+    dump() {
+        console.log("---------------------------------------");
+        console.log("midiPrefix", this.midiPrefix);
+        console.log("soundFontUrl", this.soundfontUrl);
+        console.log("loaded instruments", this.loadedInstruments);
+        var trackChannels = this.trackChannels;
+        for (var tchName in trackChannels) {
+            console.log("track ", tchName, trackChannels[tchName]);
+        }
+    }
 
     /*
       This version starts a series of callbacks for each time
@@ -345,11 +353,6 @@ class MidiPlayTool {
     }
 
     getPlayTime() {
-        if (this.crankFactor && this.crankAngle) {
-            if (this.crankAngle0 == null)
-                this.crankAngle0 = this.crankAngle;
-            return this.crankFactor * (this.crankAngle - this.crankAngle0);
-        }
         var ct = Date.now() / 1000.0;
         if (this.isPlaying) {
             var t = this.lastEventPlayTime + (ct - this.lastEventClockTime);
@@ -471,7 +474,7 @@ class MidiPlayTool {
             if (etype == "tempo") {
                 var bpm = event.bpm;
                 var mpqn = event.mpqn;
-                console.log("tempo bpm: " + bpm + "  mpqn: " + mpqn);
+                //console.log("tempo bpm: " + bpm + "  mpqn: " + mpqn);
                 continue;
             }
             var channel = event.channel;
@@ -579,6 +582,7 @@ class MidiPlayTool {
                     console.log("loaded " + inst);
                     player.loadedInstruments[inst] = true;
                 }
+                player.dump();
                 if (successFn)
                     successFn();
             }
@@ -593,7 +597,7 @@ class MidiPlayTool {
             console.log("Special Hack using gunshot");
             instName = "gunshot";
         }
-        console.log("setupInstrument chNo: " + chNo + " inst: " + inst + " name: " + instName);
+        console.log("setupChannel chNo: " + chNo + " inst: " + inst + " name: " + instName);
         var instrument = instName;
         MIDI.loadPlugin({
             soundfontUrl: player.soundfontUrl,
@@ -608,6 +612,7 @@ class MidiPlayTool {
             onsuccess: function () {
                 player.loadedInstruments[instrument] = true;
                 MIDI.programChange(chNo, instrument);
+                console.log("completed setupChannel", chNo, inst);
                 if (successFn)
                     successFn();
             }
@@ -685,6 +690,7 @@ class MidiPlayTool {
     instrumentChanged(e, select_id) {
         console.log("instrumentChanged")
         //var id = $(this).attr('id');
+        var tchName = select_id.slice("select".length);
         var id = select_id;
         var i = id.lastIndexOf("_");
         var ch = id.slice(i + 1);
@@ -692,7 +698,11 @@ class MidiPlayTool {
         val = eval(val);
         //val = val - 1; // indices start at 0 but names start at 1
         console.log("id: " + id + " ch: " + ch + "  val: " + val);
-        this.setupChannel(ch, val);
+        this.setupChannel(ch, val, () => {
+            console.log("completed instrumentChanged", id, tchName, ch, val);
+            this.trackChannels[tchName].instrument = val;
+            this.dump();
+        });
     }
 
     compositionChanged(e) {

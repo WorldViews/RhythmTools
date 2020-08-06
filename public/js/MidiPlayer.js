@@ -1,5 +1,7 @@
 
-
+/*
+This is a class for using MIDI to produce notes.
+*/
 class MidiPlayer extends SoundPlayer {
     constructor(app) {
         super(app);
