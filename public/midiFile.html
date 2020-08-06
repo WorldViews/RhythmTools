@@ -1,0 +1,95 @@
+<html>
+
+<head>
+    <title>Midi example</title>
+</head>
+
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="js/libs/stats.min.js"></script>
+    <!-- shims -->
+    <script src="./wmb/Base64.js"></script>
+    <script src="./wmb/Base64binary.js"></script>
+    <script src="./wmb/WebAudioAPI.js"></script>
+    <!-- midi.js package -->
+    <script src="./wmb/audioDetect.js"></script>
+    <script src="./wmb/gm.js"></script>
+    <script src="./wmb/loader.js"></script>
+    <script src="./wmb/plugin.audiotag.js"></script>
+    <script src="./wmb/plugin.webaudio.js"></script>
+    <script src="./wmb/plugin.webmidi.js"></script>
+    <script src="./wmb/player.js"></script>
+    <!-- utils -->
+    <script src="./wmb/dom_request_xhr.js"></script>
+    <script src="./wmb/dom_request_script.js"></script>
+    <!-- includes -->
+    <script src="./wmb/timer.js"></script>
+    <!--
+    <script src="js/pvplayer.js"></script>    
+    -->
+    <script src="./js/MidiPlayTool.js"></script>
+    <script src="https://unpkg.com/@tonejs/midi"></script>
+    <div id="controls">
+        <div id="midiControl" style="border-style: solid; border-width: 2px;">
+        </div>
+        <p>
+            <button onclick='playMelody("Classical/chopin69")'>Chopin69</button>
+            <button onclick='playMelody("Bach/wtc0")'>WTC0</button>
+            <button onclick='playMelody("Classical/beethovenSym5m1")'>BeethSym5m1</button>
+            <button onclick='playMelody("BluesRhythm1")'>Rhythm1</button>
+            <button onclick='playMelody("Classical/minute_waltz")'>Minute Waltz</button>
+            <button onclick='playMelody("jukebox")'>Jukebox</button>
+            <button onclick='playMelody("shimauta1")'>Shima Uta</button>
+    </div>
+    <script>
+        var player = null;
+        var midiObj = null;
+
+        async function testOLD() {
+            // load a midi file in the browser
+            const midi = await Midi.fromUrl("midi/shimauta1.mid");
+            //const midi = await Midi.fromUrl("midi/sakura.mid");
+            //the file name decoded from the first track
+            const name = midi.name
+            //get the tracks
+            midi.tracks.forEach(track => {
+                //tracks have notes and controlChanges
+
+                //notes are an array
+                const notes = track.notes
+                notes.forEach(note => {
+                    //note.midi, note.time, note.duration, note.name
+                })
+                /*
+                //the control changes are an object
+                //the keys are the CC number
+                track.controlChanges[64]
+                //they are also aliased to the CC number's common name (if it has one)
+                track.controlChanges.sustain.forEach(cc => {
+                    // cc.ticks, cc.value, cc.time
+                })
+                */
+                //the track also has a channel and instrument
+                //track.instrument.name
+            });
+            midiObj = midi;
+        }
+
+        function playMelody(name) {
+            player.playMelody(name);
+        }
+
+        $(document).ready(function () {
+            player = new MidiPlayTool();
+            player.setupTrackInfo();
+            player.loadInstrument("acoustic_grand_piano");
+            player.startUpdates();
+
+            //const midi = new Midi();
+            //test();
+            player.playMidiFile("midi/shimauta1.mid");
+        });
+    </script>
+</body>
+
+</html>

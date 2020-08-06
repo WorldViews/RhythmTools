@@ -44,6 +44,7 @@ class MidiPlayTool {
         player.midiPrefix = "midi/";
         player.soundfontUrl = "/rhythm/soundfont/"
         player.prevPt = null;
+        player.midiDivInitialized = false;
 
         player.compositions = [
             "Bach/wtc0",
@@ -129,6 +130,42 @@ class MidiPlayTool {
         var melodyUrl = this.midiPrefix + name + ".json";
         $.getJSON(melodyUrl, function (obj) { inst.playMidiObj(obj, autoStart) });
     }
+
+    // This tries to play a midi file using code from
+    // https://github.com/Tonejs/Midi
+    // Note: this is not working yet, because the form of JSON object
+    // it gets for a midi file is different than the one this player
+    // is based on.
+    async playMidiFile(url) {
+        // load a midi file in the browser
+        const midi = await Midi.fromUrl("midi/shimauta1.mid");
+        //const midi = await Midi.fromUrl("midi/sakura.mid");
+        //the file name decoded from the first track
+        const name = midi.name
+        //get the tracks
+        midi.tracks.forEach(track => {
+            //tracks have notes and controlChanges
+            //notes are an array
+            const notes = track.notes
+            notes.forEach(note => {
+                //note.midi, note.time, note.duration, note.name
+            })
+            /*
+            //the control changes are an object
+            //the keys are the CC number
+            track.controlChanges[64]
+            //they are also aliased to the CC number's common name (if it has one)
+            track.controlChanges.sustain.forEach(cc => {
+                // cc.ticks, cc.value, cc.time
+            })
+            */
+            //the track also has a channel and instrument
+            //track.instrument.name
+        });
+        midiObj = midi;
+        console.log("playMidiFile got midiObj", midiObj);
+    }
+
 
     fmt(t) { return "" + Math.floor(t * 1000) / 1000; }
 
@@ -676,11 +713,11 @@ class MidiPlayTool {
         var trackChannel = this.trackChannels[tchName];
         var trackNo = trackChannel.trackNo;
         var ch = trackChannel.channel;
-        var id = $("#"+mute_id).attr('id');
+        var id = $("#" + mute_id).attr('id');
         //var i = id.lastIndexOf("_");
         //var ch = id.slice(i + 1);
         console.log("id: " + id + " ch: " + ch);
-        var val = $("#"+mute_id).is(":checked");
+        var val = $("#" + mute_id).is(":checked");
         //var val = $("#"+mute_id).is(":checked");
         val = eval(val);
         console.log("mute_id: " + id + " ch: " + ch + "  val: " + val);
@@ -694,7 +731,7 @@ class MidiPlayTool {
         var id = select_id;
         var i = id.lastIndexOf("_");
         var ch = id.slice(i + 1);
-        var val = $("#"+select_id).val();
+        var val = $("#" + select_id).val();
         val = eval(val);
         //val = val - 1; // indices start at 0 but names start at 1
         console.log("id: " + id + " ch: " + ch + "  val: " + val);
@@ -713,10 +750,12 @@ class MidiPlayTool {
 
     setupMidiControlDiv() {
         var player = this;
+        if (this.midiDivInitialized)
+            return;
+        this.midiDivInitialized = true;
         console.log("setupMidiControlDiv");
         if ($("#midiControl").length == 0) {
             console.log("*** no midiControlDiv found ****");
-            $()
             return;
         }
         var str = '<button onclick="_MIDI_PLAYER.toggleTracks()">&nbsp;</button>\n' +
