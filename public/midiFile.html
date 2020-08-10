@@ -40,6 +40,13 @@
             <button onclick='playMelody("Classical/minute_waltz")'>Minute Waltz</button>
             <button onclick='playMelody("jukebox")'>Jukebox</button>
             <button onclick='playMelody("shimauta1")'>Shima Uta</button>
+        </p>
+        <p>
+            <button onclick='playMelodyV2("midi/shimauta1.mid")'>Shima Uta</button>
+            <button onclick='playMelodyV2("midi/sakura.mid")'>Sakura</button>
+            <button onclick='playMelodyV2("midi/Matsuri-DYI.mid")'>Matsuri</button>
+            <button onclick='playMelodyV2("midi/symphony_5_4.mid")'>Beethoven 5'th 4th movement</button>
+        </p>
     </div>
     <script>
         var player = null;
@@ -79,6 +86,10 @@
             player.playMelody(name);
         }
 
+        function playMelodyV2(name) {
+            player.playMidiFile(name);
+        }
+
         $(document).ready(function () {
             player = new MidiPlayTool();
             player.setupTrackInfo();
@@ -87,7 +98,9 @@
 
             //const midi = new Midi();
             //test();
-            player.playMidiFile("midi/shimauta1.mid");
+            //player.loadMidiFile("midi/shimauta1.mid");
+            player.playMidiFile("midi/Matsuri-DYI.mid");
+            //player.playMidiFile("midi/sakura.mid");
         });
     </script>
 </body>
