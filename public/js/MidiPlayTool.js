@@ -987,3 +987,5 @@ class MidiPlayTool {
     }
 
 }
+
+window.MidiPlayTool = MidiPlayTool;
